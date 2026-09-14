@@ -1,0 +1,7 @@
+# 커밋 작성자를 하나로 모은다.
+# 왼쪽이 정식 이름·이메일, 오른쪽이 과거에 쓰였던 표기.
+#
+# 주의: .mailmap 은 git log·shortlog·blame 의 **표시**만 바꾼다.
+# GitHub Contributors 그래프는 .mailmap 을 보지 않고 커밋에 박힌 값을 쓰므로,
+# 실제로 정리하려면 히스토리를 다시 써야 한다.
+RosieOh <dhxogns920@gmail.com> <20172207@gm.hannam.ac.kr>
