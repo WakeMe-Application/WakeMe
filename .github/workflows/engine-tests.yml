@@ -1,0 +1,21 @@
+name: 엔진 테스트
+
+# 판정 엔진은 OS를 모르는 순수 Swift라 러너에서 그대로 돌아간다.
+# 앱(UI·시스템 연동)은 시뮬레이터가 필요해 여기서 돌리지 않는다.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift 버전 확인
+        run: swift --version
+
+      - name: 엔진 테스트
+        working-directory: Engine
+        run: swift test
