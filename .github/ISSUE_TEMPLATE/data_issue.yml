@@ -1,0 +1,29 @@
+name: 노선 데이터 오류
+description: 역 순서·이름·소요시간·급행 정차역이 실제와 다릅니다
+labels: ["type: data", "area: data", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        노선 데이터는 `tools/build_network.py` 가 공공데이터에서 생성합니다.
+        고칠 때는 생성된 `network.json` 이 아니라 **변환기**를 고쳐야 합니다.
+  - type: input
+    id: line
+    attributes:
+      label: 노선 / 계통
+      placeholder: 1호선 경인급행
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: 앱에 나오는 값
+    validations:
+      required: true
+  - type: textarea
+    id: correct
+    attributes:
+      label: 실제 값과 근거
+      description: 공식 시각표·역사 안내 등 확인할 수 있는 출처를 적어 주세요.
+    validations:
+      required: true

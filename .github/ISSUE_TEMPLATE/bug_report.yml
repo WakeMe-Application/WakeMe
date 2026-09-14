@@ -1,0 +1,62 @@
+name: 버그 신고
+description: 앱이 의도와 다르게 동작합니다
+labels: ["type: fix", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        하차 알림은 **놓치면 끝**인 기능입니다. 알림이 안 울렸거나 늦었다면
+        탄 노선·구간·시각을 최대한 적어 주세요. 재현이 어려운 문제라 그 정보가 전부입니다.
+  - type: textarea
+    id: what
+    attributes:
+      label: 무슨 일이 있었나요
+      placeholder: 사당에서 내려야 하는데 알림이 방배 출발 후에도 오지 않았습니다.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 어떻게 동작해야 했나요
+    validations:
+      required: true
+  - type: input
+    id: route
+    attributes:
+      label: 노선과 구간
+      placeholder: 2호선 내선순환 선릉 → 사당
+  - type: input
+    id: when
+    attributes:
+      label: 탑승 시각
+      placeholder: 2026-09-14 08:12 무렵
+  - type: dropdown
+    id: tracking
+    attributes:
+      label: 그때 위치 추적 상태
+      options:
+        - 모르겠음
+        - 실시간 열차위치로 맞춰지고 있었음
+        - 정차 자동 감지로 맞춰지고 있었음
+        - 시간 추정이었음 (점선 안내가 보였음)
+  - type: dropdown
+    id: state
+    attributes:
+      label: 폰 상태
+      multiple: true
+      options:
+        - 잠금 화면
+        - 앱을 보고 있었음
+        - 주머니 안
+        - 저전력 모드
+        - 이어폰 연결
+  - type: input
+    id: env
+    attributes:
+      label: 기기와 iOS 버전
+      placeholder: iPhone 17 / iOS 26.0
+  - type: textarea
+    id: log
+    attributes:
+      label: 탑승 기록 (선택)
+      description: PoC 로거로 기록했다면 `ride-*.jsonl` 을 첨부해 주세요. 지상 구간 위치가 들어 있으니 공유 전에 확인하세요.
