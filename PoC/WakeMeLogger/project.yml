@@ -1,0 +1,34 @@
+name: WakeMeLogger
+options:
+  bundleIdPrefix: com.wakeme
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  WakeMeLogger:
+    type: application
+    platform: iOS
+    sources:
+      - path: WakeMeLogger
+    info:
+      path: Support/Info.plist
+      properties:
+        CFBundleDisplayName: 깨워줘 로거
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIBackgroundModes: [location]
+        NSLocationWhenInUseUsageDescription: 잠금 상태에서도 탑승 기록을 이어가기 위해 위치 업데이트를 사용합니다. 지상 구간 위치도 함께 기록됩니다.
+        NSMotionUsageDescription: 열차의 정차·출발을 분석하기 위해 가속도·기압·활동 데이터를 기록합니다.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wakeme.logger
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
