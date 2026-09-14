@@ -1,0 +1,71 @@
+name: WakeMe
+options:
+  bundleIdPrefix: com.wakeme
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+packages:
+  WakeMeEngine:
+    path: ../Engine
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  WakeMe:
+    type: application
+    platform: iOS
+    sources:
+      - path: WakeMe
+      - path: Shared
+    dependencies:
+      - package: WakeMeEngine
+      - target: WakeMeWidgets
+    info:
+      path: Support/WakeMe-Info.plist
+      properties:
+        CFBundleDisplayName: 깨워줘
+        # 배경을 전광판 톤으로 통일했으므로 시스템 컨트롤도 다크로 고정한다
+        UIUserInterfaceStyle: Dark
+        # Support/Secrets.xcconfig 에서 주입 (없으면 빈 값 → 실시간 보정만 꺼짐)
+        RealtimeSubwayKey: $(REALTIME_SUBWAY_KEY)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIBackgroundModes: [location]
+        NSSupportsLiveActivities: true
+        NSLocationWhenInUseUsageDescription: 잠금 상태에서도 전광판과 하차 알림을 이어가기 위해 탑승 중에만 위치 업데이트를 사용합니다.
+        # 서울 열린데이터광장 실시간 열차위치 API는 HTTPS를 제공하지 않는다
+        NSAppTransportSecurity:
+          NSExceptionDomains:
+            swopenapi.seoul.go.kr:
+              NSExceptionAllowsInsecureHTTPLoads: true
+        UIAppFonts:
+          - Pretendard-Regular.otf
+          - Pretendard-Medium.otf
+          - Pretendard-SemiBold.otf
+          - Pretendard-Bold.otf
+    configFiles:
+      Debug: Support/Secrets.xcconfig
+      Release: Support/Secrets.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wakeme.app
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  WakeMeWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: WakeMeWidgets
+      - path: Shared
+    info:
+      path: Support/WakeMeWidgets-Info.plist
+      properties:
+        CFBundleDisplayName: 깨워줘
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wakeme.app.widgets
+        TARGETED_DEVICE_FAMILY: "1"
