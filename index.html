@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>[통합 명세서 v1.2] 지하철 하차 알람 서비스 - 깨워줘</title>
+  <style>
+    :root {
+      --primary: #3B82F6;
+      --primary-dark: #1D4ED8;
+      --accent: #10B981;
+      --warning: #F59E0B;
+      --danger: #F87171;
+      --bg-dark: #090D16;
+      --card-bg: #131C2E;
+      --card-border: #23324D;
+      --code-bg: #0B1220;
+      --text-main: #F1F5F9;
+      --text-sub: #94A3B8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      border-bottom: 2px solid var(--card-border);
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 800; margin-bottom: 8px; }
+    .slogan { font-size: 1.15rem; color: var(--text-sub); }
+
+    /* TOC */
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+    .toc a {
+      color: var(--text-sub);
+      text-decoration: none;
+      font-size: 0.85rem;
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+    .toc a:hover { color: var(--text-main); border-color: var(--primary); }
+
+    /* Changelog */
+    .changelog {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+    }
+    .changelog h3 { color: var(--accent); font-size: 1rem; margin-bottom: 10px; }
+
+    /* Layout Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .card h3 {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Section Styling */
+    section { margin-bottom: 40px; scroll-margin-top: 20px; }
+    section h2 {
+      font-size: 1.4rem;
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+      margin-bottom: 20px;
+    }
+    .lead { color: var(--text-sub); margin-bottom: 16px; }
+
+    /* Tech Highlight Box */
+    .tech-box {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 40px;
+    }
+    .tech-box h3 {
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+    .tech-box h4 {
+      color: var(--primary);
+      margin-top: 28px;
+      margin-bottom: 8px;
+    }
+    .tech-box .desc { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 8px; }
+
+    /* Code Block Styling */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'SF Mono', Menlo, Consolas, 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      color: #38BDF8;
+      white-space: pre;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    /* Callout */
+    .callout {
+      border-left: 3px solid var(--warning);
+      background: rgba(245, 158, 11, 0.08);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-top: 12px;
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+    .callout strong { color: var(--text-main); }
+    .note { font-size: 0.85rem; color: var(--text-sub); margin-top: 10px; }
+
+    /* Flow Steps */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .step-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .step-num {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 800;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 6px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+    .step-content h4 { font-size: 1rem; margin-bottom: 4px; }
+    .step-content p { font-size: 0.9rem; color: var(--text-sub); }
+
+    /* Wireframe Display Simulation */
+    .sim-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .sim figcaption { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 8px; }
+    .display-sim {
+      background: #000;
+      border: 2px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px 16px;
+      text-align: center;
+      font-family: monospace;
+    }
+    .display-sim .sub { color: var(--text-sub); font-size: 0.9rem; }
+    .display-sim .main { color: var(--accent); font-size: 1.5rem; font-weight: bold; margin: 8px 0; }
+    .display-sim .next { color: var(--warning); font-size: 1rem; }
+    .display-sim .dest {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--card-border);
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+    .display-sim .meta { color: var(--text-sub); font-size: 0.8rem; margin-top: 6px; }
+    .display-sim.alert { border-color: var(--accent); }
+    .display-sim.alert .main { color: #fff; }
+    .display-sim.uncertain { border-style: dashed; }
+    .display-sim.uncertain .main { color: var(--text-sub); }
+    .display-sim.warn { border-color: var(--danger); }
+    .display-sim.warn .main { color: var(--danger); }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      background: var(--card-bg);
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.9rem;
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    th { background: rgba(255, 255, 255, 0.05); color: var(--primary); white-space: nowrap; }
+    td code, li code, p code {
+      font-family: 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 0.82rem;
+      color: #38BDF8;
+    }
+
+    /* Tags & Levels */
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .tag.p0 { background: rgba(248, 113, 113, 0.18); color: var(--danger); }
+    .tag.p1 { background: rgba(245, 158, 11, 0.18); color: var(--warning); }
+    .tag.p2 { background: rgba(148, 163, 184, 0.18); color: var(--text-sub); }
+    .tag.hyp { background: rgba(59, 130, 246, 0.18); color: var(--primary); }
+    .ok { color: var(--accent); font-weight: 700; }
+    .partial { color: var(--warning); font-weight: 700; }
+    .ng { color: var(--danger); font-weight: 700; }
+
+    ul { list-style: none; }
+    ul li { position: relative; padding-left: 20px; margin-bottom: 8px; color: var(--text-sub); }
+    ul li::before { content: "•"; color: var(--primary); font-weight: bold; position: absolute; left: 0; }
+    ul li strong { color: var(--text-main); }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding-top: 20px;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <img src="brand/wordmark.png" alt="깨워줘 — 지하철 하차 알림" style="width:260px;max-width:62%;display:block;margin:0 0 18px">
+    <span class="badge">INTEGRATED SPEC &amp; TECH GUIDE v1.2 · iOS FIRST</span>
+    <h1>지하철 하차 알람 서비스: 깨워줘 (WakeMe)</h1>
+    <p class="slogan">"방송을 못 들어도, 잠이 들어도 — 내릴 역은 놓치지 않게."<br>
+      정차 감지 · 실시간 열차위치 · Cell ID 센서 퓨전 기반 지하철 하차 알람</p>
+  </header>
+
+  <nav class="toc">
+    <a href="#overview">1. 개요</a>
+    <a href="#hypotheses">2. 가설 &amp; 검증</a>
+    <a href="#competition">3. 경쟁·대안</a>
+    <a href="#ux">4. 전광판 UX</a>
+    <a href="#flow">5. UX 플로우</a>
+    <a href="#alerts">6. 알림 설계</a>
+    <a href="#tech">7. 기술 아키텍처</a>
+    <a href="#mvp">8. MVP 명세</a>
+    <a href="#metrics">9. 성공 지표</a>
+    <a href="#risks">10. 리스크</a>
+    <a href="#roadmap">11. 로드맵</a>
+    <a href="#scope">12. 범위 &amp; 오픈 이슈</a>
+    <a href="#stack">13. 기술 스택</a>
+  </nav>
+
+  <div class="changelog">
+    <h3>v1.2 주요 변경 (2026-09-11) — iOS 우선 전환</h3>
+    <ul>
+      <li><strong>플랫폼 순서:</strong> Android 우선 → <strong>iOS 우선</strong>. 개발자 본인 기기(iPhone 17)로 매일 출퇴근길에 도그푸딩하고, 골든 라이드도 여기서 쌓습니다.</li>
+      <li><strong>핵심 신호:</strong> 정차 감지 + 시간 모델 + 실시간 열차위치 API. Cell ID는 Android 확장(Phase 3)에서 쓰는 보정 신호로 이동.</li>
+      <li><strong>신규 가설 H5:</strong> iOS 백그라운드 생존 — iOS 우선 전략의 Go/No-go.</li>
+      <li><strong>서버:</strong> 개인 MVP까지 불필요. 앱이 실시간 API를 직접 호출하고 Live Activity를 로컬로 업데이트합니다.</li>
+      <li><strong>신규:</strong> 13장 기술 스택, Phase 0 아이폰 로거 앱(<code>PoC/WakeMeLogger</code>)과 점검 스크립트.</li>
+    </ul>
+    <h3 style="margin-top: 16px;">v1.1 주요 변경 (2026-09-11)</h3>
+    <ul>
+      <li><strong>핵심 기술:</strong> Cell ID 단일 의존 → 센서 퓨전. iOS는 Cell ID 공개 API가 없어 v1.0 구조로는 구현 불가.</li>
+      <li><strong>위치 판정:</strong> Cell ID 정확 일치 상태머신 → HMM 확률 추론 + 예외 상태(반대 방향·지나침·불확실) 포함 상태머신.</li>
+      <li><strong>알림:</strong> 도착 시점 알림 → 전역 출발 시점(문 열림 60초 전) 기준 3단계. 이어폰 오디오·워치 채널 추가.</li>
+      <li><strong>데이터 모델:</strong> JSON 오류(<code>"mnc": 05</code>) 수정, LTE/5G 필드(TAC·ECI·NCI) 반영, 노선 그래프/관측 모델 분리.</li>
+      <li><strong>크라우드소싱:</strong> [지금 내림] 버튼 라벨링 → 세션 종료 후 자동 시퀀스 라벨링.</li>
+      <li><strong>신규 섹션:</strong> 가설 검증, 경쟁 분석, 알림 설계, 플랫폼 제약, 성공 지표, 리스크, 로드맵, Non-goals, 오픈 이슈.</li>
+    </ul>
+  </div>
+
+  <!-- 1. Overview -->
+  <section id="overview">
+    <h2>1. 개요</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>🎯 핵심 페인 포인트</h3>
+        <ul>
+          <li><strong>졸음</strong>으로 하차 역을 지나침 <span class="tag hyp">가설 H1</span></li>
+          <li>노이즈 캔슬링·콘텐츠 몰입으로 안내방송 미수신</li>
+          <li>혼잡 시 사람에 가리거나 꺼진 차내 전광판</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>👥 타겟 페르소나</h3>
+        <ul>
+          <li><strong>졸음 통근자:</strong> 장거리 출퇴근, 알람급 강도 필요</li>
+          <li><strong>노캔 몰입 유저:</strong> 이어폰 착용, 폰 진동을 놓치기 쉬움</li>
+          <li><strong>전광판 의존 유저:</strong> 청각장애인, 방송을 이해하기 어려운 승객</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>💡 핵심 가치 (USP)</h3>
+        <p>시간표 추정이 아닌 <strong>실제 열차 위치</strong> 기반 알림 + 폰을 열지 않는 잠금화면 전광판 + 이어폰·워치로 전달되는 확실한 하차 신호</p>
+      </div>
+      <div class="card">
+        <h3>🧭 제품 원칙</h3>
+        <ul>
+          <li><strong>늦는 것보다 이른 게 낫다</strong> — 미탐 1회가 신뢰를 무너뜨림</li>
+          <li><strong>확실한 척하지 않는다</strong> — 추정 상태는 명확히 표시</li>
+          <li><strong>폰을 열지 않는다</strong> — 잠금화면·이어폰·워치</li>
+          <li><strong>매일 0~1탭</strong> — 루틴 기반 자동 시작</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Hypotheses -->
+  <section id="hypotheses">
+    <h2>2. 문제 가설 &amp; 검증 계획</h2>
+    <p class="lead">아래 가설은 기획의 전제입니다. Phase 0(PoC)에서 검증하고, 결과에 따라 제품 정의와 우선순위를 확정합니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>가설</th><th>검증 방법</th><th>결과에 따른 결정</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>H1</strong></td>
+            <td>역을 지나치는 1순위 원인은 몰입·전광판 가림보다 <strong>졸음</strong>이다</td>
+            <td>출퇴근 승객 설문(n≥200) + 심층 인터뷰 10명</td>
+            <td>졸음이 1순위면 알람형 알림(P2 → P1 상향)과 반복 알림 강화</td>
+          </tr>
+          <tr>
+            <td><strong>H2</strong></td>
+            <td>기존 앱의 하차 알림(진동, 약 30초 전으로 관찰)은 ① 지연·급행 시 부정확하고 ② 혼잡·노캔·졸음 상황에서 놓치기 쉽다</td>
+            <td>경쟁 앱과 동일 구간 동시 탑승 테스트 20회 이상 — 알림 발송~문 열림 시간, 진동 인지 여부 기록</td>
+            <td>오차가 작으면 차별점을 정확도가 아닌 리드타임·알림 채널로 집중</td>
+          </tr>
+          <tr>
+            <td><strong>H3</strong></td>
+            <td><strong>정차 감지 + 노선 순서</strong>만으로 역 판별 정확도 97% 이상이 가능하다</td>
+            <td>아이폰 로거 로그를 정차 마크(정답 라벨)와 대조해 오프라인 분석</td>
+            <td><strong>iOS 우선 전략의 핵심 가설.</strong> 미달 시 실시간 열차위치 API 비중을 높임</td>
+          </tr>
+          <tr>
+            <td><strong>H4</strong></td>
+            <td>지하 구간에서 셀과 역(구간)이 충분히 1:1에 가깝게 대응한다</td>
+            <td><strong>Phase 3로 연기.</strong> 통신 3사 Android 단말 셀 로그 분석 (광중계기·누설동축 구간 포함)</td>
+            <td>식별력이 낮으면 Cell ID는 보정 신호로 한정</td>
+          </tr>
+          <tr>
+            <td><strong>H5</strong></td>
+            <td><strong>iOS 백그라운드 생존:</strong> 백그라운드 위치(<code>.otherNavigation</code>, 자동 일시정지 끔)로 앱을 유지하면 잠금 상태에서도 센서가 끊기지 않고, 배터리는 시간당 5% 이하다</td>
+            <td>아이폰 로거 + <code>check_ride.py</code> (백그라운드 샘플 수집률 ≥ 95%, 1초 넘는 끊김 0건)</td>
+            <td><strong>iOS 우선 전략의 Go/No-go.</strong> FAIL이면 서버 주도(APNs) 구조로 바꾸거나 Android 우선으로 복귀</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 3. Competition -->
+  <section id="competition">
+    <h2>3. 경쟁·대안 분석</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>대안</th><th>하차 알림</th><th>위치 추정 방식</th><th>확인할 한계</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>차내 전광판·안내방송</strong></td>
+            <td>—</td>
+            <td>열차 자체 시스템</td>
+            <td>가림·꺼짐, 노캔 시 미수신, 졸음에 무력</td>
+          </tr>
+          <tr>
+            <td><strong>카카오지하철</strong></td>
+            <td>제공<br><span class="note">진동 · 하차 약 30초 전 <span class="tag hyp">관찰</span></span></td>
+            <td>직접 테스트 필요 (H2)</td>
+            <td>30초로 혼잡 시 문까지 이동 가능한지, 진동만으로 인지되는지, 지연·급행 시 정확도</td>
+          </tr>
+          <tr>
+            <td><strong>네이버지도</strong></td>
+            <td>제공 (길찾기 연동)<br><span class="note">진동 · 하차 약 30초 전 <span class="tag hyp">관찰</span></span></td>
+            <td>직접 테스트 필요 (H2)</td>
+            <td>동일 + 길찾기를 거쳐야 하는 진입 비용</td>
+          </tr>
+          <tr>
+            <td><strong>스마트폰 기본 알람</strong></td>
+            <td>시간 기반 수동</td>
+            <td>사용자가 직접 계산</td>
+            <td>지연 반영 불가, 매번 설정</td>
+          </tr>
+          <tr>
+            <td><strong>깨워줘</strong></td>
+            <td>핵심 기능</td>
+            <td>센서 퓨전</td>
+            <td>차별점: 문 열림 ≥ 60초 전 알림, 이어폰·워치·반복 알림, 실제 위치 기반, 0~1탭 루틴, 반대 방향 경고</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">※ 기존 앱의 알림 방식(진동, 하차 약 30초 전)은 사용자 관찰(2026-09-11)이며, 앱별 차이와 정확한 시점은 H2 테스트로 확인합니다. 위치 추정 방식은 추정하지 않고 테스트 후 업데이트합니다.</p>
+    <div class="callout">
+      <strong>시사점:</strong> 기존 앱이 "진동 1회 + 약 30초 전"이라면 ① 노캔·졸음 사용자는 진동을 놓치기 쉽고 ② 혼잡한 차내에서 30초는 문까지 이동하기 빠듯합니다. 깨워줘는 <strong>리드타임(≥ 60초)</strong>과 <strong>알림 채널(이어폰·워치·반복)</strong>로 차별화합니다.
+    </div>
+  </section>
+
+  <!-- 4. UX Simulation -->
+  <section id="ux">
+    <h2>4. 잠금화면 전광판 UX</h2>
+    <p class="lead">사용자가 가장 먼저 알고 싶은 정보는 "지금 어디"보다 <strong>"몇 정거장, 몇 분 남았나"</strong>입니다. 예시 경로: 2호선 내선 강남 → 서초.</p>
+    <div class="sim-grid">
+      <figure class="sim">
+        <figcaption>① PREPARE · 1차 알림 직후</figcaption>
+        <div class="display-sim">
+          <div class="sub">이전 강남 ◀</div>
+          <div class="main">이번 역 · 교대</div>
+          <div class="next">▶ 다음 서초 🎯</div>
+          <div class="dest">서초까지 <strong>2정거장</strong> · 약 3분</div>
+          <div class="meta">내리는 문 오른쪽 · 신뢰도 높음</div>
+        </div>
+      </figure>
+      <figure class="sim">
+        <figcaption>② ALIGHT_NOW · 2차 알림</figcaption>
+        <div class="display-sim alert">
+          <div class="sub">교대 출발</div>
+          <div class="main">🔔 이번 역에서 내리세요</div>
+          <div class="next">서초 · 약 1분 30초</div>
+          <div class="dest">문 앞으로 이동하세요</div>
+          <div class="meta">내리는 문 오른쪽</div>
+        </div>
+      </figure>
+      <figure class="sim">
+        <figcaption>③ UNCERTAIN · 근거 부족</figcaption>
+        <div class="display-sim uncertain">
+          <div class="sub">추정 위치</div>
+          <div class="main">교대 부근 (추정)</div>
+          <div class="next">시간 기반 추정 중</div>
+          <div class="dest">서초까지 약 2정거장</div>
+          <div class="meta">알림을 1정거장 앞당겨 발송합니다</div>
+        </div>
+      </figure>
+      <figure class="sim">
+        <figcaption>④ WRONG_DIRECTION · 경고</figcaption>
+        <div class="display-sim warn">
+          <div class="sub">강남 → 역삼 방면</div>
+          <div class="main">⚠ 반대 방향 열차예요</div>
+          <div class="next">서초와 멀어지고 있어요</div>
+          <div class="dest">역삼에서 내려 반대편 승강장으로</div>
+          <div class="meta">경로를 자동으로 다시 계산합니다</div>
+        </div>
+      </figure>
+    </div>
+    <p class="note">※ 소요시간·문 방향 등 목업 수치는 예시 데이터입니다.</p>
+
+    <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.05rem;">표시 원칙</h3>
+    <ul>
+      <li><strong>"이번 역" = 다음 정차역</strong> (차내 방송 기준). 정차 중에는 현재 정차한 역을 표시합니다.</li>
+      <li><strong>1순위 정보</strong>는 남은 정거장 수와 예상 시간. 역 이름 3개 나열은 보조 정보입니다.</li>
+      <li><strong>추정 상태</strong>는 점선 테두리·"(추정)" 라벨로 구분합니다. 확실한 척하지 않습니다.</li>
+      <li><strong>표시 채널:</strong> iOS는 Live Activity·다이내믹 아일랜드(상시표시 지원 기기에선 화면을 켜지 않아도 보임), Android는 FGS 진행 알림(Android 16+ Live Updates <code>ProgressStyle</code>: 역 = 진행바 위 포인트).</li>
+      <li><strong>홈/잠금 위젯</strong>은 갱신 예산 제약으로 실시간 표시에 부적합합니다. 루틴 원탭 시작 버튼 용도로만 씁니다.</li>
+    </ul>
+  </section>
+
+  <!-- 5. User Flow -->
+  <section id="flow">
+    <h2>5. 핵심 UX 플로우</h2>
+    <div class="flow-steps">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>목적지 설정 (루틴 0~1탭)</h4>
+          <p>요일·시간대 기반 출퇴근 루틴을 자동 제안합니다. 사용자는 <strong>목적지만</strong> 입력하고, 출발역은 지하 진입 직전 위치로 자동 추정합니다. 노선·방향(내선/외선, 상행/하행)·급행·지선·환승은 자동 계산합니다. 위젯·단축어(App Intents)로 원탭 시작도 지원합니다.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>탑승 확정 &amp; 방향 검증</h4>
+          <p>승강장 대기(WAITING) 중 첫 출발이 감지되면 탑승을 확정합니다. 첫 역 변화가 경로와 반대면 <strong>즉시 반대 방향 경고</strong>를 보냅니다. 붐벼서 열차를 한 대 보내도 다음 열차로 자연스럽게 이어집니다.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>잠금화면 전광판</h4>
+          <p>폰을 열지 않고 잠금화면만 봐도 남은 정거장·예상 시간·신뢰도를 확인할 수 있습니다.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>3단계 하차 알림</h4>
+          <p>준비(2역 전 출발) ➔ 하차(전역 출발, 문 열림 60초 이상 전) ➔ 확인(도착 후 미확인 시 반복). 환승역에도 동일하게 적용합니다.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>자동 종료 &amp; 예외 처리</h4>
+          <p>하차 후 보행이 감지되거나 GPS가 복귀하면 세션을 자동 종료해 배터리를 보호합니다. 지나쳤다면 다음 역에서 되돌아가는 방법을 안내합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Alerts -->
+  <section id="alerts">
+    <h2>6. 알림 설계</h2>
+    <p class="lead">도착(문 열림) 시점 알림은 혼잡한 차내에서 문까지 이동할 시간이 없어 너무 늦습니다. 기존 앱은 하차 약 30초 전에 진동으로 알리는 것으로 관찰되는데(3장), 깨워줘는 2차 알림을 <strong>문 열림 60초 이상 전</strong>으로 잡아 두 배 이상의 여유를 확보합니다. 모든 알림은 <strong>문 열림 기준 리드타임</strong>으로 정의합니다.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>단계</th><th>트리거</th><th>목표 시점</th><th>기본 채널</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1차 준비</strong></td>
+            <td>목적지 2역 전 출발</td>
+            <td>도착 약 3~4분 전</td>
+            <td>짧은 진동 1회 + 이어폰 차임</td>
+          </tr>
+          <tr>
+            <td><strong>2차 하차</strong></td>
+            <td>목적지 전역 출발</td>
+            <td>문 열림 ≥ 60초 전</td>
+            <td>강한 진동 + 이어폰 TTS("다음 역 서초, 내리실 역입니다") + 워치</td>
+          </tr>
+          <tr>
+            <td><strong>3차 확인</strong></td>
+            <td>목적지 정차 감지 후 사용자 미확인</td>
+            <td>정차 즉시, 확인할 때까지 반복</td>
+            <td>알람형 (소리·진동 반복)</td>
+          </tr>
+          <tr>
+            <td><strong>경고</strong></td>
+            <td>반대 방향 탑승 / 목적지 지나침</td>
+            <td>감지 즉시</td>
+            <td>강한 진동 + 안내 화면</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ul style="margin-top: 12px;">
+      <li>1정거장 구간이면 1차를 생략합니다. 사용자가 알림을 앞당기도록 설정할 수 있습니다.</li>
+      <li>위치 신뢰도가 낮으면(UNCERTAIN) 알림을 <strong>자동으로 앞당깁니다</strong>.</li>
+    </ul>
+
+    <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.05rem;">플랫폼별 알림 채널</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>채널</th><th>Android</th><th>iOS</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>이어폰 오디오 큐/TTS</strong></td>
+            <td><code>AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK</code> + TextToSpeech</td>
+            <td>앱 실행 중: AVAudioSession 덕킹 / 서버 주도 시: 커스텀 알림 사운드(음성 녹음 파일)</td>
+            <td>노캔 사용자 1순위 채널</td>
+          </tr>
+          <tr>
+            <td><strong>폰 진동</strong></td>
+            <td>커스텀 진동 패턴 (채널 생성 시 고정 → 패턴 변경 시 새 채널)</td>
+            <td>알림 기본 진동만 가능 (Core Haptics는 포그라운드 전용)</td>
+            <td>iOS에서 "연속 강한 햅틱"은 불가</td>
+          </tr>
+          <tr>
+            <td><strong>방해금지/집중모드 통과</strong></td>
+            <td>알람 용도 채널(<code>USAGE_ALARM</code>) + DND 예외 온보딩</td>
+            <td>Time Sensitive 알림</td>
+            <td>Critical Alert는 Apple 승인 난이도로 제외</td>
+          </tr>
+          <tr>
+            <td><strong>워치</strong></td>
+            <td>알림 미러링 → Wear OS 전용 앱</td>
+            <td>알림 미러링 → watchOS 전용 앱</td>
+            <td>손목 햅틱이 가장 확실한 신호</td>
+          </tr>
+          <tr>
+            <td><strong>알람형</strong></td>
+            <td>전용 알람 화면 (Android 14+ 풀스크린 인텐트 정책 확인)</td>
+            <td>iOS 26 AlarmKit (Phase 1 적용 · ETA 기반 카운트다운)</td>
+            <td>졸음 페르소나용</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 7. Technical Architecture -->
+  <section id="tech" class="tech-box">
+    <h3>📡 7. 기술 아키텍처: 센서 퓨전 위치 추적</h3>
+    <p style="color: var(--text-sub);">
+      GPS가 닿지 않는 지하 구간은 단일 신호로 해결하지 않습니다. "열차는 정해진 역 순서로 앞으로만 간다"는 강한 제약 위에서 여러 약한 신호를 확률적으로 결합합니다.
+    </p>
+
+    <h4>7-1. 입력 신호</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>신호</th><th>Android</th><th>iOS</th><th>강점</th><th>약점</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>가속도·자이로 정차 감지</strong></td>
+            <td class="ok">가능</td>
+            <td class="partial">앱 생존 필요</td>
+            <td>DB 불필요, 정차 횟수 = 지나간 역 수</td>
+            <td>터널 내 신호대기 정차, 사용자 움직임 노이즈</td>
+          </tr>
+          <tr>
+            <td><strong>실시간 열차위치 API</strong><br><span class="note">서울 열린데이터광장</span></td>
+            <td class="ok">가능</td>
+            <td class="ok">서버 경유</td>
+            <td>지연·급행 반영, 인프라 비용 낮음</td>
+            <td>탑승 열차 식별 필요, 갱신 지연·누락</td>
+          </tr>
+          <tr>
+            <td><strong>역간 소요시간 모델</strong></td>
+            <td class="ok">가능</td>
+            <td class="ok">가능</td>
+            <td>항상 가용 (폴백·사전확률)</td>
+            <td>지연 시 오차</td>
+          </tr>
+          <tr>
+            <td><strong>Cell ID</strong><br><span class="note">서빙 + 이웃 셀</span></td>
+            <td class="ok">가능</td>
+            <td class="ng">불가</td>
+            <td>절대 위치 단서</td>
+            <td>통신사별 DB, 셀 ≠ 역, 화면 꺼짐 시 갱신 억제</td>
+          </tr>
+          <tr>
+            <td><strong>역사 Wi-Fi BSSID</strong></td>
+            <td class="partial">백그라운드 30분 1회 스캔</td>
+            <td class="ng">불가</td>
+            <td>역사 AP는 정확</td>
+            <td>MVP 제외. 차내 Wi-Fi는 열차와 함께 이동하므로 사용 금지</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>7-2. 플랫폼별 구조</h4>
+    <p class="desc"><strong>iOS — 온디바이스 추론</strong> (Phase 1 · 백그라운드 위치로 앱을 유지하고, 이동 중 위치를 서버로 보내지 않음)</p>
+    <pre class="code-block">[CoreLocation 백그라운드 위치] ── 앱 생존 유지 (.otherNavigation · 자동 일시정지 끔)
+
+[CoreMotion 가속도·기압] ─────┐
+[실시간 열차위치 API] ────────┼──▶ [HMM 위치 추론] ──▶ [상태머신] ──▶ Live Activity 로컬 업데이트
+[역간 소요시간 분포] ─────────┤     (Swift Package)                  + Time Sensitive 알림 · AlarmKit
+[노선 그래프 번들] ───────────┘</pre>
+
+    <p class="desc" style="margin-top: 16px;"><strong>iOS — 공개 출시</strong> (Phase 2 · API 키 보호와 호출 한도 관리를 위한 서버 프록시)</p>
+    <pre class="code-block">[서버] 노선 단위로 실시간 열차위치 폴링 · 캐싱 ──▶ [앱] 탑승 노선만 구독
+
+(H5 FAIL 시 대안) [서버] 탑승 열차 매칭 ──▶ APNs ──▶ Live Activity 원격 업데이트</pre>
+
+    <p class="desc" style="margin-top: 16px;"><strong>Android — 온디바이스 추론</strong> (Phase 3 · 엔진 포팅 + Cell ID 보정)</p>
+    <pre class="code-block">[가속도·자이로] ──────────┐
+[서빙+이웃 셀 관측] ───────┼──▶ [HMM 위치 추론] ──▶ [상태머신] ──▶ 알림 · 진행 알림 UI
+[역간 소요시간 분포] ──────┤
+[노선 그래프·관측 모델] ───┘</pre>
+    <div class="callout">
+      <strong>탑승 열차 식별 (iOS):</strong> 앱이 살아 있으므로 가속도로 출발 시각을 감지하고, 실시간 API의 "출발" 상태와 대조해 탑승 열차를 확정합니다. 매칭이 틀리면 Live Activity 버튼("다음 열차 탔어요")으로 원탭 정정합니다. 백그라운드 위치를 쓰는 목적은 공개 출시 때 App Review에 설명해야 합니다.
+    </div>
+
+    <h4>7-3. 위치 판정: HMM + 상태머신</h4>
+    <ul>
+      <li><strong>은닉 상태:</strong> 구간 s ∈ {역 i 정차, 역 i→i+1 주행}. 급행은 정차역 시퀀스로 구성합니다.</li>
+      <li><strong>전이:</strong> 노선 그래프 기반 <strong>단방향 진행 제약</strong>. 머무를 확률은 소요시간 분포에서 산출합니다.</li>
+      <li><strong>관측:</strong> 정차/출발 이벤트, P(셀 관측 | 구간), 실시간 열차 상태.</li>
+      <li><strong>알림 판정:</strong> P(목적지 전역 출발 완료) &gt; τ. 사후확률이 분산될수록 τ를 낮춰 <strong>알림을 앞당깁니다</strong>.</li>
+    </ul>
+    <pre class="code-block">IDLE ──[목적지 설정]──▶ WAITING (승강장 대기)
+WAITING ──[첫 출발 감지]──▶ TRACKING (구간 i)
+TRACKING ──[진행 방향 ≠ 경로]──▶ WRONG_DIRECTION   ⚠ 즉시 경고 + 경로 재계산
+TRACKING ──[목적지 2역 전 출발]──▶ PREPARE          🔔 1차 준비
+PREPARE ──[목적지 전역 출발]──▶ ALIGHT_NOW          🔔🔔 2차 하차 (문 열림 ≥ 60초 전)
+ALIGHT_NOW ──[목적지 정차 감지]──▶ ARRIVED          🔔🔔🔔 3차 확인 (미확인 시 반복)
+ARRIVED ──[보행 감지 / GPS 복귀]──▶ COMPLETED       세션 자동 종료
+ARRIVED ──[미하차 상태로 재출발]──▶ MISSED           ⚠ 되돌아가기 안내
+
+* 모든 추적 상태 ──[근거 부족]──▶ UNCERTAIN (시간 모델 폴백 · 알림 앞당김)
+* 환승 경로: 환승역 ARRIVED ──▶ 다음 구간 WAITING 자동 연결
+* 최대 세션 시간 초과 시 강제 종료</pre>
+
+    <h4>7-4. 데이터 모델</h4>
+    <p class="desc"><strong>① 노선 그래프</strong> — 공공 역코드 기반 정적 데이터. 앱 번들에 넣고 버전으로 관리합니다. (값은 예시)</p>
+    <pre class="code-block">{
+  "graph_version": "2026.09.1",
+  "line_id": "L2",
+  "direction": "INNER",
+  "stations": {
+    "222": { "name": "강남", "transfer": [] },
+    "223": { "name": "교대", "transfer": ["L3"] },
+    "224": { "name": "서초", "transfer": [] }
+  },
+  "segments": [
+    {
+      "seg_id": "L2-IN-222-223",
+      "from": "222",
+      "to": "223",
+      "run_sec": { "p50": 90, "p90": 120 },
+      "dwell_sec_p50": 30,
+      "door_side_at_to": "TBD"
+    }
+  ]
+}</pre>
+
+    <p class="desc" style="margin-top: 16px;"><strong>② 관측 모델</strong> — 크라우드소싱으로 갱신하는 P(셀 관측 | 구간). 통신사·RAT별로 분리합니다. (값은 예시)</p>
+    <pre class="code-block">{
+  "plmn": "45005",
+  "rat": "LTE",
+  "tac": 10234,
+  "eci": 8921341,
+  "pci": 211,
+  "earfcn": 1350,
+  "neighbors": [ { "pci": 87, "earfcn": 1350 } ],
+  "seg_id": "L2-IN-222-223",
+  "phase": "DWELL",
+  "p": 0.82,
+  "n_obs": 431,
+  "last_seen": "2026-09-01"
+}</pre>
+    <ul style="margin-top: 12px;">
+      <li><strong>plmn은 문자열:</strong> MNC의 선행 0을 보존합니다 (SKT 45005 · KT 45008 · LG U+ 45006). v1.0의 <code>"mnc": 05</code>는 유효한 JSON이 아닙니다.</li>
+      <li><strong>LTE</strong>는 TAC + ECI(28bit), <strong>5G</strong>는 TAC + NCI(36bit → Kotlin/Java <code>Long</code>). v1.0의 LAC는 2G/3G 개념입니다.</li>
+      <li><strong>이웃 셀</strong>은 전체 ID 없이 PCI/EARFCN만 오는 경우가 많아, 지문(fingerprint) 특징으로 사용합니다.</li>
+      <li><strong>phase</strong>: <code>DWELL</code>(정차) / <code>RUN</code>(주행). 셀 경계는 역 경계와 일치하지 않을 수 있습니다.</li>
+      <li><strong>last_seen</strong> 기준으로 시간 감쇠를 적용해 통신사 셀 재배치에 대응합니다.</li>
+    </ul>
+
+    <h4>7-5. 데이터 수집 전략</h4>
+    <ul>
+      <li><strong>Phase A (PoC 정답 데이터):</strong> 테스터가 통신 3사 단말로 PoC 노선을 탑승하며 셀 + 센서 로그 + 수동 정차 마킹을 수집합니다. 모델 학습·검증용입니다.</li>
+      <li><strong>Phase B (자동 시퀀스 라벨링):</strong> 세션이 정상 종료되면 관측한 셀 시퀀스를 정차 이벤트·노선 순서에 정렬(Viterbi)해 <strong>지나간 모든 구간</strong>을 자동 라벨링합니다. 사용자 액션은 필요 없습니다.</li>
+      <li><strong>Phase C (품질 관리):</strong> 신뢰도 낮은 세션을 제외하고 이상치를 제거합니다. 셀 재배치가 감지되면 해당 구간을 재학습합니다.</li>
+    </ul>
+    <div class="callout">
+      <strong>v1.0 대비:</strong> [지금 내림] 버튼 시점은 이미 승강장·계단일 가능성이 높아 라벨 노이즈가 큽니다. 게다가 탑승 1회에 목적지 1개만 라벨링됩니다. 자동 시퀀스 라벨링은 탑승 1회로 전 구간을 라벨링합니다.
+    </div>
+
+    <h4>7-6. 플랫폼 제약 &amp; 대응</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>제약</th><th>영향</th><th>대응</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>iOS 잠금 시 앱 정지</strong></td>
+            <td>센서 수집·위치 판정 중단</td>
+            <td>백그라운드 위치(<code>.otherNavigation</code>, <code>pausesLocationUpdatesAutomatically = false</code>)로 앱 유지 — H5로 최우선 검증</td>
+          </tr>
+          <tr>
+            <td>iOS Cell ID 비공개</td>
+            <td>iOS 셀 추적 불가</td>
+            <td>정차 감지 + 시간 모델 + 실시간 API (Cell ID는 Android 확장 때)</td>
+          </tr>
+          <tr>
+            <td>iOS 백그라운드 햅틱 불가</td>
+            <td>연속 강한 진동 불가</td>
+            <td>Time Sensitive 알림, 이어폰 오디오, 워치, AlarmKit 검토</td>
+          </tr>
+          <tr>
+            <td>iOS 위젯 갱신 예산</td>
+            <td>실시간 위젯 불가</td>
+            <td>ActivityKit Live Activity. 위젯은 시작 버튼 용도</td>
+          </tr>
+          <tr>
+            <td>Android 백그라운드 위치 권한 심사</td>
+            <td>Play 심사 부담, 사용자 거부</td>
+            <td>[출발] 탭 시 <code>foregroundServiceType="location"</code> FGS 시작 → 사용 중 권한만으로 동작</td>
+          </tr>
+          <tr>
+            <td>Android 화면 꺼짐 시 셀 갱신 억제</td>
+            <td>셀 이벤트 누락, 캐시값 반환</td>
+            <td><code>requestCellInfoUpdate()</code> 주기 폴링, 기기별 실측</td>
+          </tr>
+          <tr>
+            <td>Android 위젯 → FGS 시작 제약</td>
+            <td>위젯 원탭 시작 실패 가능</td>
+            <td>백그라운드 시작 예외 조건 검증, 실패 시 앱 열기로 폴백</td>
+          </tr>
+          <tr>
+            <td>제조사 절전 (삼성 앱 절전 등)</td>
+            <td>서비스 강제 종료</td>
+            <td>절전 예외 온보딩, 비정상 종료 감지 시 복구 알림</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>7-7. 프라이버시 설계</h4>
+    <ul>
+      <li><strong>온디바이스 추론 (iOS·Android):</strong> 이동 중 위치를 서버로 보내지 않습니다. 실시간 열차위치 API 호출에는 노선 이름만 들어갑니다.</li>
+      <li><strong>최소 전송 (공개 출시 후):</strong> 서버 프록시에는 구독할 노선만 보냅니다. H5 실패로 서버 주도 구조가 되면 출발역·방향·탑승 시각만 보내고 세션 종료 시 삭제합니다.</li>
+      <li><strong>크라우드 업로드:</strong> 세션 종료 후 (셀, 구간) 쌍만 집계해 업로드합니다. 기기 ID와 타임스탬프 시퀀스는 보내지 않고, 출발·도착 인접 구간은 제외해 집·회사 추정을 막습니다.</li>
+      <li><strong>법규:</strong> 위치정보법상 사업 등록·신고 대상 여부와 동의·약관·보관 의무를 출시 전에 법률 검토합니다 (오픈 이슈).</li>
+    </ul>
+  </section>
+
+  <!-- 8. MVP Feature Table -->
+  <section id="mvp">
+    <h2>8. MVP 기능 명세</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>우선순위</th>
+            <th>기능</th>
+            <th>명세</th>
+            <th>iOS (Phase 1)</th>
+            <th>Android (Phase 3)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tag p0">P0</span></td>
+            <td><strong>위치 판정 엔진</strong></td>
+            <td>정차 감지 + 노선 순서 + 시간 모델 HMM, 온디바이스</td>
+            <td>CoreMotion + 백그라운드 위치 유지, Swift Package 엔진</td>
+            <td>SensorManager, location FGS (엔진 포팅)</td>
+          </tr>
+          <tr>
+            <td><span class="tag p0">P0</span></td>
+            <td><strong>실시간 열차 매칭</strong></td>
+            <td>실시간 열차위치와 출발 감지를 대조해 탑승 열차 확정</td>
+            <td>앱이 API 직접 호출 (세션 중 탑승 노선만) → 공개 출시 시 서버 프록시</td>
+            <td>보조 신호</td>
+          </tr>
+          <tr>
+            <td><span class="tag p0">P0</span></td>
+            <td><strong>경로 설정</strong></td>
+            <td>루틴 즐겨찾기, 출발역 자동 추정, 방향·급행·지선 자동 판별</td>
+            <td>CoreLocation, App Intents (액션 버튼·단축어)</td>
+            <td>FusedLocationProvider</td>
+          </tr>
+          <tr>
+            <td><span class="tag p0">P0</span></td>
+            <td><strong>하차 알림</strong></td>
+            <td>3단계 알림 + 반대 방향 경고 + 지나침 안내</td>
+            <td>Time Sensitive 알림 + 커스텀 사운드</td>
+            <td>알람 채널, 커스텀 진동 패턴</td>
+          </tr>
+          <tr>
+            <td><span class="tag p0">P0</span></td>
+            <td><strong>잠금화면 전광판</strong></td>
+            <td>남은 정거장·ETA·신뢰도 진행 표시</td>
+            <td>ActivityKit Live Activity (로컬 업데이트, APNs 불필요)</td>
+            <td>FGS 진행 알림 (Android 16+ Live Updates)</td>
+          </tr>
+          <tr>
+            <td><span class="tag p0">P0</span></td>
+            <td><strong>세션 자동 종료</strong></td>
+            <td>보행 감지·GPS 복귀·최대 시간 초과 시 종료</td>
+            <td>CMMotionActivity</td>
+            <td>Activity Recognition API</td>
+          </tr>
+          <tr>
+            <td><span class="tag p1">P1</span></td>
+            <td><strong>알람형 알림</strong></td>
+            <td>해제할 때까지 울리는 알람 (졸음 페르소나)</td>
+            <td>AlarmKit (iOS 26)</td>
+            <td>전용 알람 화면 (풀스크린 인텐트 정책 확인)</td>
+          </tr>
+          <tr>
+            <td><span class="tag p1">P1</span></td>
+            <td><strong>이어폰 오디오 알림</strong></td>
+            <td>차임·TTS를 이어폰으로 재생 (음악 덕킹)</td>
+            <td>커스텀 알림 사운드 / AVAudioSession</td>
+            <td>AudioFocus + TextToSpeech</td>
+          </tr>
+          <tr>
+            <td><span class="tag p1">P1</span></td>
+            <td><strong>환승 연결</strong></td>
+            <td>환승역 하차 알림 후 다음 구간 자동 이어가기</td>
+            <td colspan="2">공통 로직 (엔진)</td>
+          </tr>
+          <tr>
+            <td><span class="tag p1">P1</span></td>
+            <td><strong>워치 알림</strong></td>
+            <td>손목 햅틱 하차 신호</td>
+            <td>알림 미러링 → watchOS 앱</td>
+            <td>알림 미러링 → Wear OS 앱</td>
+          </tr>
+          <tr>
+            <td><span class="tag p1">P1</span></td>
+            <td><strong>하차 편의 정보</strong></td>
+            <td>내리는 문 방향, 빠른 하차·환승 칸</td>
+            <td colspan="2">데이터 출처·라이선스 확인 필요</td>
+          </tr>
+          <tr>
+            <td><span class="tag p2">P2</span></td>
+            <td><strong>Cell ID 보정</strong></td>
+            <td>서빙+이웃 셀 관측으로 위치 확률 보정</td>
+            <td class="ng">미지원 (공개 API 없음)</td>
+            <td>핵심 보정 신호 (<code>requestCellInfoUpdate</code>)</td>
+          </tr>
+          <tr>
+            <td><span class="tag p2">P2</span></td>
+            <td><strong>크라우드 자동 라벨링</strong></td>
+            <td>세션 종료 후 자동 시퀀스 라벨 업로드 + 백엔드 집계</td>
+            <td>정차·소요시간 통계만</td>
+            <td>셀 관측 포함</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 9. Metrics -->
+  <section id="metrics">
+    <h2>9. 성공 지표</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>구분</th><th>지표</th><th>정의</th><th>초기 목표</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>North Star</strong></td>
+            <td>적시 알림 성공률</td>
+            <td>2차 알림이 문 열림 60초 이상 전에 발송되고, 사용자가 목적지에서 하차한 세션 비율</td>
+            <td>≥ 95%</td>
+          </tr>
+          <tr>
+            <td>정확도</td>
+            <td>역 판별 정확도</td>
+            <td>정차 이벤트별 역 추정 정답률 (PoC 정답 라벨 기준)</td>
+            <td>≥ 97%</td>
+          </tr>
+          <tr>
+            <td>정확도</td>
+            <td>미탐률</td>
+            <td>알림 없이 목적지를 지나친 세션 비율</td>
+            <td>≤ 1%</td>
+          </tr>
+          <tr>
+            <td>정확도</td>
+            <td>조기 오탐률</td>
+            <td>2차 알림이 2정거장 이상 일찍 발송된 세션 비율</td>
+            <td>≤ 5%</td>
+          </tr>
+          <tr>
+            <td>타이밍</td>
+            <td>2차 알림 리드타임</td>
+            <td>알림 발송 ~ 문 열림 시간 분포</td>
+            <td>p10 ≥ 60초, p90 ≤ 180초</td>
+          </tr>
+          <tr>
+            <td>리소스</td>
+            <td>배터리 소모</td>
+            <td>1시간 세션 기준 배터리 감소량</td>
+            <td>≤ 5% (PoC 실측 후 확정)</td>
+          </tr>
+          <tr>
+            <td>사용성</td>
+            <td>루틴 시작 비율</td>
+            <td>전체 세션 중 루틴·원탭으로 시작된 비율</td>
+            <td>≥ 60%</td>
+          </tr>
+          <tr>
+            <td>리텐션</td>
+            <td>출퇴근 W4 리텐션</td>
+            <td>가입 4주차에 주 3회 이상 사용한 유저 비율</td>
+            <td>TBD (베타 후 설정)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">※ 목표치는 가설이며, Phase 0 PoC와 클로즈드 베타 결과로 확정합니다. v1.0의 "초저전력" 표현은 측정 가능한 배터리 목표로 대체했습니다.</p>
+  </section>
+
+  <!-- 10. Risks -->
+  <section id="risks">
+    <h2>10. 리스크 &amp; 대응</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>리스크</th><th>가능성</th><th>영향</th><th>대응</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>iOS 백그라운드 생존 실패</strong> (잠금 시 앱 정지·센서 끊김)</td>
+            <td class="partial">중</td>
+            <td class="ng">매우 높음</td>
+            <td>Phase 0에서 최우선 검증(H5). 실패 시 서버 주도(APNs) 구조로 전환하거나 Android 우선으로 복귀</td>
+          </tr>
+          <tr>
+            <td>미탐으로 인한 신뢰 붕괴</td>
+            <td class="partial">중</td>
+            <td class="ng">매우 높음</td>
+            <td>불확실 시 알림 앞당김, 3차 반복 알림, 다중 채널</td>
+          </tr>
+          <tr>
+            <td>App Review — 백그라운드 위치 목적 외 사용 판정</td>
+            <td class="partial">중</td>
+            <td class="ng">높음</td>
+            <td><code>.otherNavigation</code>, 파란 위치 표시기, 사용 목적 명시, 사용 중 권한만 요청</td>
+          </tr>
+          <tr>
+            <td>위치정보법 규제</td>
+            <td class="partial">중</td>
+            <td class="ng">높음</td>
+            <td>출시 전 법률 검토, 온디바이스 추론, 업로드 비식별화</td>
+          </tr>
+          <tr>
+            <td>경쟁 앱과 차별화 실패 (iOS엔 Cell ID 차별점 없음)</td>
+            <td class="partial">중</td>
+            <td class="ng">높음</td>
+            <td>리드타임(≥ 60초)·알림 채널(이어폰·워치·알람)로 차별화, H2 비교 측정</td>
+          </tr>
+          <tr>
+            <td>정차 감지 오탐 (터널 내 신호대기, 손에 든 폰의 움직임)</td>
+            <td class="partial">중</td>
+            <td class="partial">중</td>
+            <td>최소 정차시간 조건, 소요시간 사전확률, 실시간 API 증거 결합</td>
+          </tr>
+          <tr>
+            <td>실시간 API 지연·호출 한도</td>
+            <td class="partial">중</td>
+            <td class="partial">중</td>
+            <td>개인 MVP는 세션 중 탑승 노선만 호출, 공개 출시 시 서버 캐싱. 단독 판정에 쓰지 않음</td>
+          </tr>
+          <tr>
+            <td>셀과 역이 1:1로 대응하지 않음 (Android)</td>
+            <td class="ng">높음</td>
+            <td class="ok">낮음 (Phase 3 한정)</td>
+            <td>Cell ID를 보정 신호로 격하, Phase 3에서 검증 (H4)</td>
+          </tr>
+          <tr>
+            <td>통신사 셀 재배치로 관측 모델 부패 (Android)</td>
+            <td class="partial">중</td>
+            <td class="ok">낮음</td>
+            <td>last_seen 감쇠, 자동 라벨링으로 지속 갱신</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 11. Roadmap -->
+  <section id="roadmap">
+    <h2>11. 로드맵 (iOS 우선)</h2>
+    <div class="flow-steps">
+      <div class="step-item">
+        <div class="step-num">P0</div>
+        <div class="step-content">
+          <h4>Phase 0 · 아이폰 PoC (2주) — Go/No-go 판단</h4>
+          <p>로거 앱(<code>PoC/WakeMeLogger</code>)으로 출퇴근길을 기록합니다. 정차 순간 액션 버튼을 눌러 남긴 마크가 정답 라벨입니다. <code>check_ride.py</code>로 H5(백그라운드 생존·배터리)를 판정하고, 정차 감지 정확도(H3)를 분석하며, 경쟁 앱 동시 테스트(H2)와 설문(H1)도 진행합니다.<br>
+          <strong>Go 기준:</strong> H5 PASS, 역 판별 ≥ 97%, 2차 알림 리드타임 p10 ≥ 60초.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">P1</div>
+        <div class="step-content">
+          <h4>Phase 1 · iOS MVP</h4>
+          <p>Swift Package 엔진, Live Activity 전광판, 3단계 알림(Time Sensitive·AlarmKit), 루틴·액션 버튼 시작을 구현합니다. 서버 없이 앱이 실시간 API를 직접 호출합니다. 본인이 매일 쓰고, 이후 지인에게 TestFlight로 배포합니다.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">P2</div>
+        <div class="step-content">
+          <h4>Phase 2 · 공개 출시</h4>
+          <p>서버 프록시(API 키 보호·호출 한도), App Review 대응, 이어폰 오디오·워치·환승 연결(P1)을 추가합니다.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">P3</div>
+        <div class="step-content">
+          <h4>Phase 3 · Android &amp; 스케일</h4>
+          <p>골든 라이드로 결과가 같은지 검증하며 엔진을 포팅하고, Cell ID 보정과 H4를 검증합니다. 크라우드 자동 라벨링을 켜고 수도권 전 노선으로 확장합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. Scope & Open Issues -->
+  <section id="scope">
+    <h2>12. 범위 &amp; 오픈 이슈</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>🚫 Non-goals (MVP)</h3>
+        <ul>
+          <li>버스·광역버스·KTX 등 지하철 외 교통수단</li>
+          <li>도보를 포함한 출발지→목적지 전체 길찾기</li>
+          <li>수도권 외 도시철도</li>
+          <li>혼잡도·도착 정보 등 정보성 기능 확장</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>❓ 오픈 이슈</h3>
+        <ul>
+          <li><strong>법규:</strong> 위치정보사업 등록 / 위치기반서비스사업 신고 대상 여부, 동의·약관·보관 의무</li>
+          <li><strong>실시간 API:</strong> 노선 커버리지, 갱신 주기, 일일 호출 한도(개인 사용량으로 충분한지), 운영 키 발급 조건</li>
+          <li><strong>App Review:</strong> 백그라운드 위치 사용 목적을 설명하는 방식 (공개 출시 전)</li>
+          <li><strong>하차 편의 데이터:</strong> 내리는 문 방향·빠른 하차 칸 데이터의 출처와 라이선스</li>
+          <li><strong>개발자 계정:</strong> 매일 사용·TestFlight 배포 시점에 유료 멤버십 전환</li>
+          <li><strong>Android 표시 채널 (Phase 3):</strong> Live Updates 적용 조건, 삼성 Now Bar 노출 가능 여부</li>
+          <li><strong>수익 모델:</strong> 잠금화면 UX에 광고 부적합 → 프리미엄(워치·알람형·다중 루틴) 또는 B2B 검토</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13. Tech Stack -->
+  <section id="stack">
+    <h2>13. 기술 스택</h2>
+    <p class="lead">기술스택은 기획서의 제약에서 거꾸로 정합니다. 이 앱은 화면이 적고, 가치는 백그라운드와 시스템 화면(Live Activity·알림·액션 버튼)에서 나오므로 <strong>네이티브</strong>로 갑니다. Flutter·React Native는 핵심 기능이 전부 네이티브 모듈이 되어, 네이티브 위에 한 겹을 더 얹는 셈이 됩니다.</p>
+
+    <h3 style="margin-bottom: 12px; font-size: 1.05rem;">결정 기준</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>기획서 요구사항</th><th>기술적 함의</th><th>결정</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>잠금 상태 생존·센서 수집</td>
+            <td>OS API를 직접 다루고, 문제가 생기면 직접 디버깅</td>
+            <td><strong>네이티브 Swift</strong></td>
+          </tr>
+          <tr>
+            <td>Live Activity·AlarmKit·App Intents</td>
+            <td>SwiftUI로만 구현 가능</td>
+            <td><strong>SwiftUI</strong></td>
+          </tr>
+          <tr>
+            <td>판정 엔진이 제품의 핵심</td>
+            <td>OS와 분리해 로그 재생으로 테스트</td>
+            <td><strong>Swift Package</strong> (Foundation만 의존)</td>
+          </tr>
+          <tr>
+            <td>개인 MVP는 서버 없이</td>
+            <td>앱이 공공 API를 직접 호출, Live Activity 로컬 업데이트</td>
+            <td><strong>서버는 Phase 2</strong></td>
+          </tr>
+          <tr>
+            <td>Android는 나중에</td>
+            <td>포팅해도 결과가 같다는 보장 필요</td>
+            <td><strong>골든 라이드</strong> (언어 중립 JSONL + 기대 결과)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.05rem;">Phase별 스택</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Phase</th><th>앱</th><th>서버·인프라</th><th>데이터·도구</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>0 · PoC</strong></td>
+            <td>아이폰 로거: SwiftUI, CoreMotion, CoreLocation, App Intents</td>
+            <td>없음</td>
+            <td>Python: <code>check_ride.py</code> → Jupyter·pandas·numpy</td>
+          </tr>
+          <tr>
+            <td><strong>1 · iOS MVP</strong></td>
+            <td>Swift 6 + SwiftUI (최소 iOS 26), ActivityKit + WidgetKit, AlarmKit, UserNotifications, App Intents, SwiftData, URLSession</td>
+            <td>없음 (노선 그래프는 앱 번들)</td>
+            <td>골든 라이드 재생 테스트 (Swift Testing), CI</td>
+          </tr>
+          <tr>
+            <td><strong>2 · 공개 출시</strong></td>
+            <td>최소 iOS 17로 낮출지 검토 (Live Activity 버튼은 iOS 17+)</td>
+            <td>서버 프록시 + Redis 캐시, 필요 시 APNs. 언어는 이때 결정 (Vapor면 엔진 공유 가능)</td>
+            <td>크래시·지표 수집 (역 ID는 보내지 않음)</td>
+          </tr>
+          <tr>
+            <td><strong>3 · Android</strong></td>
+            <td>Kotlin + Jetpack Compose, 엔진 포팅 (필요 시 KMP 전환 검토), minSdk 29</td>
+            <td>크라우드 집계 API</td>
+            <td>관측 모델 번들 재빌드 배치</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.05rem;">저장소 구조</h3>
+    <pre class="code-block">WakeMe/
+  index.html                  기획서
+  PoC/WakeMeLogger/         Phase 0 아이폰 로거 (xcodegen: project.yml)
+  PoC/analysis/               check_ride.py — H5 판정·그래프
+  tools/build_network.py      공공데이터 → 노선 데이터 생성
+                              순서는 국토부 순번, 속성은 표준데이터, 소요시간은 서울교통공사 실측(1~8호선)
+  App/                        SwiftUI 앱 + Live Activity 확장 (구현됨 · 시간 모델 기반)
+  Engine/                     Swift Package — 노선·경로·알림 시점·추적기 (구현됨 · HMM은 PoC 후)
+  GoldenRides/  (Phase 1)     탑승 로그 JSONL + 기대 결과</pre>
+
+    <h3 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.05rem;">원칙</h3>
+    <ul>
+      <li><strong>엔진은 OS를 모르게:</strong> 입력은 관측값 스트림과 시계뿐입니다. 그래야 실제 탑승 로그를 재생해 테스트할 수 있습니다.</li>
+      <li><strong>골든 라이드가 곧 명세:</strong> Phase 0 로그와 정답 마크를 보관하고, CI에서 역 판별 정확도·리드타임 p10이 기준(9장)에 못 미치면 빌드를 실패시킵니다. Android로 포팅할 때도 같은 묶음으로 검증합니다.</li>
+      <li><strong>서드파티 라이브러리 없이 시작:</strong> 이 규모에서는 Apple 프레임워크로 충분합니다.</li>
+      <li><strong>개발자 계정:</strong> PoC는 무료 Apple ID(7일마다 재설치)로 충분하고, 매일 쓰거나 TestFlight로 배포할 때부터 유료 멤버십이 필요합니다.</li>
+    </ul>
+  </section>
+
+  <footer>
+    문서 이력 · v1.0 초안 (Cell ID 단일 기반) → v1.1 (2026-09-11) 기술 타당성 리뷰 반영: 센서 퓨전 전환, 알림 재설계, 지표·리스크·로드맵 추가, 기존 앱 알림 방식 관찰(진동·약 30초 전) 반영<br>
+    v1.2 (2026-09-11) iOS 우선 전환: 가설 H5, 13장 기술 스택, Phase 0 아이폰 로거·점검 스크립트 추가
+  </footer>
+</div>
+
+</body>
+</html>
