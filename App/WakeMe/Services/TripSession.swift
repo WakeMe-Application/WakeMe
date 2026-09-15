@@ -28,6 +28,10 @@ final class TripSession: Identifiable {
     private(set) var livePosition: TrainPosition?
     /// 급행·완행 계통을 바꾼 시각
     private(set) var lastServiceSwitch: (date: Date, isExpress: Bool)?
+    /// 환승역에서 기다리는 동안, 갈아탈 열차가 언제 오는지
+    private(set) var nextTransferTrain: NextTrain?
+    /// 실시간 추적이 지금 어떤 상태인지 (실패 원인을 화면에 드러내려고 둔다)
+    private(set) var realtimeStatus = "실시간 조회를 시작하는 중…"
 
     @ObservationIgnored private let settings: AppSettings
     @ObservationIgnored private let variants: [SubwayLine]
@@ -35,6 +39,10 @@ final class TripSession: Identifiable {
     @ObservationIgnored private let keepAlive: LocationKeepAlive?
     @ObservationIgnored private var motion: MotionMonitor?
     @ObservationIgnored private var realtime: RealtimeTracker?
+    @ObservationIgnored private let voice = VoiceAlert()
+    @ObservationIgnored private var transferWatch: TransferWatch?
+    /// 같은 단계를 두 번 읽지 않도록 마지막으로 말한 단계를 기억한다
+    @ObservationIgnored private var lastSpokenPhase: TripPhase?
     @ObservationIgnored private var ticker: Task<Void, Never>?
 
     /// - Parameter variants: 첫 구간 노선의 다른 운행 계통 (급행 ↔ 완행 전환)
@@ -119,6 +127,9 @@ final class TripSession: Identifiable {
         line = lines[legIndex]
         tracker = TripTracker(
             trip: journey.legs[legIndex].trip, policy: settings.alertPolicy, timeScale: settings.demoSpeed)
+        transferWatch?.stop()
+        transferWatch = nil
+        nextTransferTrain = nil
         rebuildRealtime()
         realtime?.start()
         refresh()
@@ -154,6 +165,25 @@ final class TripSession: Identifiable {
     /// 실시간 열차위치를 쓸 수 있는 상태인지 (설정이 켜져 있고, API가 주는 노선이고)
     var isRealtimeAvailable: Bool {
         settings.realtimeEnabled && TrainPositionAPI.apiLineName(forLineID: line.id) != nil
+    }
+
+    /// 실시간 열차의 노선도상 위치. 0 = 첫 역, 1.5 = 둘째와 셋째 역 사이.
+    ///
+    /// API는 역 단위로만 알려 주므로 상태로 구간을 나눈다. 이건 추정이 아니라
+    /// "전역을 떠났다/진입 중이다"라는 보고를 그림으로 옮긴 것이다.
+    var livePositionProgress: Double? {
+        guard let livePosition else { return nil }
+        let target = RealtimeTracker.normalize(livePosition.stationName)
+        guard let index = trip.stops.firstIndex(where: {
+            RealtimeTracker.normalize($0.station.name) == target
+        }) else { return nil }
+        let offset: Double = switch livePosition.status {
+        case .arrived: 0          // 역에 서 있다
+        case .approaching: -0.25  // 역으로 들어오는 중
+        case .leftPreviousStation: -0.6  // 전역을 떠나 이 역으로 오는 중
+        case .departed: 0.4       // 이 역을 떠났다
+        }
+        return min(max(Double(index) + offset, 0), Double(trip.stops.count - 1))
     }
 
     /// 실시간 열차 정보. 역을 특정할 수 있어 시간 모델보다 우선하고, 급행 여부도 함께 본다.
@@ -200,7 +230,10 @@ final class TripSession: Identifiable {
         realtime = RealtimeTracker(
             key: settings.effectiveRealtimeKey,
             lineID: line.id,
-            stationNames: trip.stops.map(\.station.name)
+            // 아직 승차역에 오지 않은 뒤쪽 열차까지 봐야 곧 탈 열차를 잡는다
+            lineStations: line.stations.map(\.name),
+            origin: trip.stops[0].station.name,
+            destination: trip.destination.name
         ) { [weak self] position in
             self?.handleRealtime(position)
         }
@@ -222,20 +255,98 @@ final class TripSession: Identifiable {
         keepAlive?.stop()
         motion?.stop()
         realtime?.stop()
+        voice.stop()
+        transferWatch?.stop()
+        transferWatch = nil
         NotificationScheduler.cancelAll()
+        AlarmScheduler.cancel()
     }
 
     private func refresh() {
         now = .now
         snapshot = tracker.snapshot(at: now)
         realtime?.expectedStation = currentStop.station.name
+        realtimeStatus = realtime?.statusText ?? "실시간 꺼짐 · 인증키가 없습니다"
+        announceIfNeeded()
+        updateTransferWatch()
         liveActivity.update(activityState)
+    }
+
+    /// 환승역에 내려 다음 열차를 기다리는 동안에만 갈아탈 노선을 지켜본다.
+    private func updateTransferWatch() {
+        guard isTransferPending, settings.realtimeEnabled else {
+            if transferWatch != nil {
+                transferWatch?.stop()
+                transferWatch = nil
+                nextTransferTrain = nil
+            }
+            return
+        }
+        let next = legIndex + 1
+        guard transferWatch == nil,
+              let nextLine = nextLine,
+              journey.legs.indices.contains(next)
+        else { return }
+        let nextTrip = journey.legs[next].trip
+        transferWatch = TransferWatch(
+            key: settings.effectiveRealtimeKey,
+            line: nextLine,
+            transferStationID: trip.destination.id,
+            goesForward: nextTrip.direction == .forward
+        ) { [weak self] train in
+            self?.nextTransferTrain = train
+        }
+        transferWatch?.start()
+    }
+
+    /// 단계가 바뀌는 순간 이어폰으로 말한다.
+    ///
+    /// 알림 예약(`NotificationScheduler`)과 별개로 둔다. 배너는 잠금화면에 남아야 하고,
+    /// 음성은 그 순간 한 번만 나가야 해서 수명이 다르다.
+    private func announceIfNeeded() {
+        let phase = snapshot.phase
+        defer { lastSpokenPhase = phase }
+        guard settings.voiceEnabled, lastSpokenPhase != nil, phase != lastSpokenPhase else { return }
+        switch phase {
+        case .prepare:
+            voice.speak("\(trip.destination.name)까지 \(snapshot.stopsRemaining)정거장 남았어요. 내릴 준비하세요.")
+        case .alightNow:
+            voice.speak(isLastLeg
+                        ? "다음 역 \(trip.destination.name)에서 내리세요."
+                        : "다음 역 \(trip.destination.name)에서 갈아타세요.")
+        case .arrived:
+            voice.speak(isLastLeg
+                        ? "\(trip.destination.name)에 도착했어요. 지금 내리세요."
+                        : "\(trip.destination.name)에 도착했어요. 갈아타세요.")
+        case .waiting, .riding:
+            break
+        }
     }
 
     private func reschedule() {
         NotificationScheduler.schedule(
             tracker.scheduledAlerts, trip: trip, policy: tracker.policy,
             soundEnabled: settings.soundEnabled, isTransfer: !isLastLeg)
+        rescheduleAlarm()
+    }
+
+    /// 2차 하차 알림만 시스템 알람으로도 건다.
+    ///
+    /// 마지막 구간에서만 건다 — 환승은 놓쳐도 다음 열차를 타면 되지만,
+    /// 목적지를 지나치면 되돌아와야 한다. 울릴 이유의 무게가 다르다.
+    private func rescheduleAlarm() {
+        guard settings.alarmEnabled, isLastLeg else {
+            AlarmScheduler.cancel()
+            return
+        }
+        guard let alight = tracker.scheduledAlerts.first(where: { $0.alert.kind == .alightNow }) else {
+            AlarmScheduler.cancel()
+            return
+        }
+        let seconds = alight.date.timeIntervalSince(.now)
+        let destination = finalDestination.name
+        let tint = line.color
+        Task { await AlarmScheduler.scheduleAlight(in: seconds, destination: destination, tint: tint) }
     }
 
     private var activityAttributes: TripActivityAttributes {

@@ -59,6 +59,7 @@ struct TripView: View {
                         lineColor: session.line.color,
                         currentIndex: session.hasDeparted ? snapshot.currentIndex : 0,
                         currentTag: !session.hasDeparted ? "탑승 대기" : (snapshot.isDwelling ? "정차 중" : "이번 역"),
+                        trainProgress: session.livePositionProgress,
                         onSelect: { correctionIndex = $0 })
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
@@ -132,9 +133,10 @@ struct TripView: View {
                     Spacer(minLength: 0)
                     Text(freshness(of: position.receivedAt))
                         .font(.caption)
-                        .foregroundStyle(BoardPalette.secondaryText)
+                        .foregroundStyle(isStale(position.receivedAt)
+                                         ? BoardPalette.prepare : BoardPalette.secondaryText)
                 } else {
-                    Text("실시간 열차를 찾는 중…")
+                    Text(session.realtimeStatus)
                         .font(.footnote)
                         .foregroundStyle(BoardPalette.secondaryText)
                     Spacer(minLength: 0)
@@ -147,11 +149,21 @@ struct TripView: View {
     }
 
     /// 마지막 수신이 얼마나 지났는지. 30초마다 받으므로 1분을 넘으면 끊긴 것으로 읽힌다.
+    /// 이 값을 **받은 지** 얼마나 됐는지.
+    ///
+    /// "받은 지"를 빼면 바로 왼쪽의 "선릉 도착"과 한 줄로 붙어
+    /// "선릉에 59초 뒤 도착"이라는 카운트다운으로 읽힌다. 뜻이 정반대고,
+    /// 시간이 갈수록 숫자가 커져서 거꾸로 세는 것처럼 보인다.
     private func freshness(of date: Date) -> String {
         let seconds = Int(session.now.timeIntervalSince(date))
-        if seconds < 15 { return "방금" }
-        if seconds < 60 { return "\(seconds)초 전" }
-        return "\(seconds / 60)분 전"
+        if seconds < 15 { return "방금 받음" }
+        if seconds < 60 { return "받은 지 \(seconds)초" }
+        return "받은 지 \(seconds / 60)분"
+    }
+
+    /// 30초마다 받으므로 이보다 오래됐으면 실시간이 끊긴 것으로 본다
+    private func isStale(_ date: Date) -> Bool {
+        session.now.timeIntervalSince(date) > 90
     }
 
     private func notice(_ text: String, systemImage: String, tint: Color) -> some View {
@@ -196,6 +208,15 @@ struct TripView: View {
                 VStack(spacing: 10) {
                     Button("환승 열차 탔어요") { session.advanceToNextLeg() }
                         .buttonStyle(.cta(session.nextLine?.color ?? BoardPalette.current))
+                    if let next = session.nextTransferTrain {
+                        Label(
+                            next.seconds < 45
+                            ? "\(next.isExpress ? "급행 " : "")열차가 곧 들어와요"
+                            : "다음 \(next.isExpress ? "급행 " : "")열차 약 \(Int((next.seconds / 60).rounded()))분 · \(next.stationsAway)정거장 전",
+                            systemImage: "train.side.front.car")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(session.nextLine?.color ?? BoardPalette.current)
+                    }
                     Text("\(session.nextLine?.name ?? "다음 노선")으로 갈아타면 눌러 주세요")
                         .font(.caption)
                         .foregroundStyle(BoardPalette.secondaryText)

@@ -238,7 +238,7 @@ extension AppModel {
             session.injectLivePosition(TrainPosition(
                 trainNumber: "2054",
                 stationName: stops[here].station.name,
-                nextStationName: stops[min(here + 1, stops.count - 1)].station.name,
+                terminusName: stops[stops.count - 1].station.name,
                 status: .approaching,
                 isUpLine: true,
                 isExpress: false,

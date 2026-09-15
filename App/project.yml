@@ -1,6 +1,6 @@
 name: WakeMe
 options:
-  bundleIdPrefix: com.wakeme
+  bundleIdPrefix: com.rosieoh
   deploymentTarget:
     iOS: "26.0"
   createIntermediateGroups: true
@@ -12,6 +12,9 @@ settings:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
+    # 무료 Personal Team. 기여자는 본인 Team ID로 바꾼다
+    DEVELOPMENT_TEAM: 9Q5MGM32FL
+    CODE_SIGN_STYLE: Automatic
 targets:
   WakeMe:
     type: application
@@ -32,8 +35,10 @@ targets:
         RealtimeSubwayKey: $(REALTIME_SUBWAY_KEY)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        UIBackgroundModes: [location]
+        # location: 잠금 중 전광판 갱신 / audio: 잠금 중 이어폰 음성 안내
+        UIBackgroundModes: [location, audio]
         NSSupportsLiveActivities: true
+        NSAlarmKitUsageDescription: 무음 모드나 집중 모드에서도 하차 알림이 울리도록 시스템 알람을 씁니다.
         NSLocationWhenInUseUsageDescription: 잠금 상태에서도 전광판과 하차 알림을 이어가기 위해 탑승 중에만 위치 업데이트를 사용합니다.
         # 서울 열린데이터광장 실시간 열차위치 API는 HTTPS를 제공하지 않는다
         NSAppTransportSecurity:
@@ -50,7 +55,7 @@ targets:
       Release: Support/Secrets.xcconfig
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.wakeme.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.rosieoh.wakeme
         TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
   WakeMeWidgets:
@@ -67,5 +72,5 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.wakeme.app.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.rosieoh.wakeme.widgets
         TARGETED_DEVICE_FAMILY: "1"

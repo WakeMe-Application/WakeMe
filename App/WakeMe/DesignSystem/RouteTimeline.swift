@@ -10,6 +10,9 @@ struct RouteTimeline: View {
     var currentIndex: Int?
     /// 현재 역 옆 태그 (예: "이번 역", "정차 중", "탑승 대기")
     var currentTag = "이번 역"
+    /// 실시간으로 받은 실제 열차 위치. 0 = 첫 역, 1.5 = 둘째와 셋째 역 사이.
+    /// nil이면 그리지 않는다 — 추정 위치(점)와 달리 이건 API가 말한 진짜 위치다.
+    var trainProgress: Double?
     var onSelect: ((Int) -> Void)?
 
     private enum Progress { case passed, current, upcoming }
@@ -21,6 +24,44 @@ struct RouteTimeline: View {
                     .id(index)
             }
         }
+        .overlayPreferenceValue(StopCenterKey.self) { anchors in
+            GeometryReader { proxy in
+                if let point = trainPoint(in: proxy, anchors: anchors) {
+                    trainMarker
+                        .position(point)
+                        // 30초마다 오는 값 사이를 미끄러지게만 한다. 그 사이를 지어내지는 않는다.
+                        .animation(.easeInOut(duration: 0.9), value: point.y)
+                        .transition(.opacity)
+                }
+            }
+            .allowsHitTesting(false)  // 위치 보정 탭이 막히면 안 된다
+        }
+    }
+
+    /// 실시간 열차 마커. 역 점과 겹치면 그 역에 서 있다는 뜻이라 위에 그린다.
+    private var trainMarker: some View {
+        Image(systemName: "tram.fill")
+            .font(.system(size: 12, weight: .black))
+            .foregroundStyle(.white)
+            .frame(width: 26, height: 26)
+            .background(Circle().fill(lineColor))
+            .overlay(Circle().strokeBorder(BoardPalette.background, lineWidth: 2.5))
+            .shadow(color: .black.opacity(0.5), radius: 4, y: 1)
+            .accessibilityHidden(true)
+    }
+
+    /// 두 역 점 사이를 비율로 보간해 마커를 놓을 자리를 구한다.
+    /// 행 높이를 상수로 두면 글자 크기 설정에 따라 어긋나므로 실제 점 위치를 쓴다.
+    private func trainPoint(in proxy: GeometryProxy, anchors: [Int: Anchor<CGPoint>]) -> CGPoint? {
+        guard let trainProgress, stops.count > 1 else { return nil }
+        let clamped = min(max(trainProgress, 0), Double(stops.count - 1))
+        let lower = Int(clamped.rounded(.down))
+        let upper = min(lower + 1, stops.count - 1)
+        guard let lowerAnchor = anchors[lower], let upperAnchor = anchors[upper] else { return nil }
+        let start = proxy[lowerAnchor]
+        let end = proxy[upperAnchor]
+        let ratio = clamped - Double(lower)
+        return CGPoint(x: start.x, y: start.y + (end.y - start.y) * ratio)
     }
 
     private func row(index: Int, stop: Trip.Stop) -> some View {
@@ -36,6 +77,7 @@ struct RouteTimeline: View {
                 }
                 .frame(width: 4)
                 dot(progress: progress, isDestination: isDestination)
+                    .anchorPreference(key: StopCenterKey.self, value: .center) { [index: $0] }
             }
             .frame(width: 28)
 
@@ -129,5 +171,13 @@ struct RouteTimeline: View {
 
     private func nameColor(_ progress: Progress) -> Color {
         progress == .passed ? BoardPalette.secondaryText.opacity(0.6) : BoardPalette.text
+    }
+}
+
+/// 실시간 열차 마커를 놓으려고 각 역 점의 중심을 모은다
+private struct StopCenterKey: PreferenceKey {
+    static let defaultValue: [Int: Anchor<CGPoint>] = [:]
+    static func reduce(value: inout [Int: Anchor<CGPoint>], nextValue: () -> [Int: Anchor<CGPoint>]) {
+        value.merge(nextValue()) { _, new in new }
     }
 }
