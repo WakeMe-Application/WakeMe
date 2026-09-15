@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @State private var didFireTest = false
     @Environment(AppModel.self) private var model
 
     var body: some View {
@@ -31,13 +32,31 @@ struct OnboardingView: View {
 
                 Button("알림 허용하고 시작하기") {
                     Task {
-                        _ = await NotificationScheduler.requestAuthorization()
+                        let granted = await NotificationScheduler.requestAuthorization()
+                        // 알람 권한도 여기서 함께 받는다.
+                        // 탑승 중에 물으면 하필 전광판을 봐야 할 순간에 팝업이 덮는다.
+                        await AlarmScheduler.requestAuthorization()
+                        // 약속만 하고 증명하지 않으면 믿기 어렵다.
+                        // 허용한 그 자리에서 한 번 울려 "이렇게 울린다"를 보여 준다.
+                        if granted {
+                            await NotificationScheduler.fireTest(soundEnabled: true)
+                            didFireTest = true
+                            try? await Task.sleep(for: .seconds(3))
+                        }
                         model.completeOnboarding()
                     }
                 }
                 .buttonStyle(.cta(BoardPalette.current))
 
-                Text("하차 알림을 보내려면 알림 권한이 필요해요. 위치는 탑승 중에만 사용해요.")
+                if didFireTest {
+                    Label("지금 한 번 울려 볼게요", systemImage: "bell.badge.waveform.fill")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(BoardPalette.current)
+                        .padding(.top, 10)
+                        .transition(.opacity)
+                }
+
+                Text("하차 알림을 보내려면 알림 권한이 필요해요. 무음·집중 모드에서도 울리게 하려면 알람 권한도 함께 받아요. 위치는 탑승 중에만 사용해요.")
                     .font(.caption)
                     .foregroundStyle(BoardPalette.secondaryText)
                     .frame(maxWidth: .infinity)
