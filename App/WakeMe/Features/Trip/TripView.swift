@@ -7,6 +7,7 @@ struct TripView: View {
     let session: TripSession
     @State private var correctionIndex: Int?
     @State private var confirmEnd = false
+    @State private var confirmMissed = false
 
     var body: some View {
         ZStack {
@@ -20,6 +21,11 @@ struct TripView: View {
         }
         .animation(.snappy, value: session.alightedAt)
         .preferredColorScheme(.dark)
+        // VoiceOver 는 화면을 훑어야 바뀐 걸 안다. 자고 있던 사람에게는 늦다.
+        .onChange(of: session.snapshot.phase) { _, phase in
+            guard let text = announcement(for: phase) else { return }
+            AccessibilityNotification.Announcement(text).post()
+        }
         .sensoryFeedback(trigger: session.snapshot.phase) { _, phase in
             switch phase {
             case .prepare: .warning
@@ -32,15 +38,31 @@ struct TripView: View {
 
     private var snapshot: TripSnapshot { session.snapshot }
 
+    /// 내릴 차례 — 화면에서 군더더기를 걷어낸다
+    private var isAlighting: Bool { snapshot.phase == .alightNow }
+
+    private func announcement(for phase: TripPhase) -> String? {
+        switch phase {
+        case .prepare: "\(session.trip.destination.name)까지 \(snapshot.stopsRemaining)정거장. 내릴 준비하세요."
+        case .alightNow: "이번 역 \(session.trip.destination.name)에서 내리세요."
+        case .arrived: "\(session.trip.destination.name) 도착. 지금 내리세요."
+        case .waiting, .riding: nil
+        }
+    }
+
     private var content: some View {
         VStack(spacing: 0) {
             topBar
+            if isAlighting {
+                alightingBoard
+            } else {
             // 전광판이 주인공이라 역이 바뀌어도 자동 스크롤하지 않는다
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 16) {
                     PhaseBanner(session: session)
                     BoardCard(session: session)
-                    liveTrainRow
+                    liveTrainRow(scrollTo: proxy)
                     DestinationCard(session: session)
                     if let switched = session.lastServiceSwitch, session.now.timeIntervalSince(switched.date) < 120 {
                         notice(
@@ -68,6 +90,8 @@ struct TripView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
             }
+            }
+            }
             bottomAction
         }
         .confirmationDialog(
@@ -78,11 +102,35 @@ struct TripView: View {
         } message: { _ in
             Text("이 역에 정차한 시각을 기준으로 남은 시간과 알림을 다시 계산해요.")
         }
+        .confirmationDialog(
+            "\(session.finalDestination.name)을 지나치셨나요?",
+            isPresented: $confirmMissed, titleVisibility: .visible
+        ) {
+            Button("네, 다시 안내해 주세요") { model.restartAfterMissingStop() }
+        } message: {
+            Text("지금 \(session.currentStop.station.name)에서 \(session.finalDestination.name)까지 가는 길을 다시 찾아 알림을 새로 걸어요.")
+        }
         .confirmationDialog("안내를 종료할까요?", isPresented: $confirmEnd, titleVisibility: .visible) {
             Button("종료", role: .destructive) { model.closeTrip(feedback: nil) }
         } message: {
             Text("예약된 하차 알림도 함께 취소돼요.")
         }
+    }
+
+    /// 내릴 차례 전용 화면.
+    ///
+    /// 자다 깬 사람이 3초 안에 알아야 할 건 "내려? 말아?" 하나뿐이다.
+    /// 남은 정거장·도착 예정·노선도는 지금 도움이 되지 않고 눈만 분산시킨다.
+    /// 스크롤할 것도 없으므로 스크롤뷰를 쓰지 않고 세로 가운데에 놓는다.
+    private var alightingBoard: some View {
+        VStack(spacing: 20) {
+            Spacer(minLength: 0)
+            PhaseBanner(session: session)
+            BoardCard(session: session)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .transition(.opacity)
     }
 
     private var topBar: some View {
@@ -117,7 +165,7 @@ struct TripView: View {
     /// 실시간 열차위치 — 우리가 시간으로 추정한 위치가 아니라, API가 말하는 실제 열차 위치다.
     /// 둘이 다를 수 있고, 그 차이를 숨기지 않는 편이 사용자가 화면을 믿을지 판단하는 데 낫다.
     @ViewBuilder
-    private var liveTrainRow: some View {
+    private func liveTrainRow(scrollTo proxy: ScrollViewProxy) -> some View {
         if session.isRealtimeAvailable {
             HStack(spacing: 10) {
                 Image(systemName: "dot.radiowaves.up.forward")
@@ -145,7 +193,26 @@ struct TripView: View {
             .padding(.horizontal, 16)
             .frame(height: 46)
             .background(BoardPalette.surface, in: .rect(cornerRadius: 16))
+            .contentShape(.rect)
+            // 노선도가 길면 열차 마커가 스크롤 아래에 숨는다. 눌러서 그 자리로 간다.
+            .onTapGesture {
+                guard let progress = session.livePositionProgress else { return }
+                withAnimation(.snappy) { proxy.scrollTo(Int(progress.rounded()), anchor: .center) }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(liveTrainAccessibilityLabel)
+            .accessibilityHint(session.livePosition == nil ? "" : "노선도에서 이 열차 위치로 이동합니다")
         }
+    }
+
+    /// 열차 마커는 그림이라 음성으로 못 읽는다. 같은 내용을 이 줄이 대신 말한다.
+    private var liveTrainAccessibilityLabel: String {
+        guard let position = session.livePosition else {
+            return "실시간 열차 " + session.realtimeStatus
+        }
+        let age = Int(session.now.timeIntervalSince(position.receivedAt))
+        let ageText = age < 60 ? "\(max(age, 1))초 전 받음" : "\(age / 60)분 전 받음"
+        return "실시간 열차 위치. \(position.locationText). \(position.trainNumber)번 열차. \(ageText)"
     }
 
     /// 마지막 수신이 얼마나 지났는지. 30초마다 받으므로 1분을 넘으면 끊긴 것으로 읽힌다.
@@ -222,8 +289,14 @@ struct TripView: View {
                         .foregroundStyle(BoardPalette.secondaryText)
                 }
             } else if snapshot.phase == .alightNow || snapshot.phase == .arrived {
-                Button("내렸어요") { session.confirmAlighted() }
-                    .buttonStyle(.cta(BoardPalette.current))
+                VStack(spacing: 10) {
+                    Button("내렸어요") { session.confirmAlighted() }
+                        .buttonStyle(.cta(BoardPalette.current))
+                    // 자다 깨보니 이미 지난 경우의 출구. 이게 없으면 "잘 내렸어요"만 남는다.
+                    Button("지나쳤어요") { confirmMissed = true }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(BoardPalette.secondaryText)
+                }
             }
         }
         .padding(.horizontal, 16)
@@ -347,6 +420,11 @@ private struct BoardCard: View {
             RoundedRectangle(cornerRadius: 28)
                 .strokeBorder(snapshot.phase == .alightNow ? BoardPalette.current : BoardPalette.stroke, lineWidth: snapshot.phase == .alightNow ? 2 : 1)
         }
+        // 조각조각 읽히면 잠결에 알아듣기 어렵다. 한 문장으로 묶는다.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "\(label(snapshot)) \(current.name)"
+            + (session.nextStop.map { ". 다음 \($0.station.name)" } ?? ". 내릴 역"))
     }
 
     private func label(_ snapshot: TripSnapshot) -> String {

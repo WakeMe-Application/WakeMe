@@ -166,6 +166,28 @@ final class AppModel {
         self.session = nil
     }
 
+    /// 목적지를 지나쳤을 때 — 지금 있는 역에서 목적지로 다시 깐다.
+    ///
+    /// 자다 깨보니 이미 지난 상황은 이 앱 사용자에게 가장 현실적인 사고인데,
+    /// 지금까지 출구가 "내렸어요"뿐이었다. 그걸 누르면 "잘 내렸어요"가 떴다.
+    /// 지나친 사람에게 필요한 건 축하가 아니라 되돌아가는 길이다.
+    ///
+    /// - Returns: 경로를 찾지 못하면 false (막차·지선 등)
+    @discardableResult
+    func restartAfterMissingStop() -> Bool {
+        guard let session else { return false }
+        let from = session.currentStop.station.name
+        let to = session.finalDestination.name
+        guard from != to, let draft = plannedDraft(from: from, to: to) else {
+            routeNotice = "\(from)에서 \(to)까지 가는 경로를 찾지 못했어요."
+            return false
+        }
+        session.end()
+        self.session = nil
+        present(makeSession(draft))
+        return true
+    }
+
     func completeOnboarding() {
         store.settings.hasOnboarded = true
         showOnboarding = false
