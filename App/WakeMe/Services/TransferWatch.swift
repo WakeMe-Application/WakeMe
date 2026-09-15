@@ -90,18 +90,23 @@ final class TransferWatch {
         }
     }
 
+    /// 환승역에서 **갈아탈 방향으로** 몇 정거장 떨어져 있는지. 음수면 아직 오지 않은 뒤쪽이다.
+    /// 방향과 순환선의 배열 끝 넘어감을 함께 흡수한다 (`RealtimeTracker.offset` 과 같은 계산).
+    private func offset(of index: Int) -> Int {
+        let count = line.stations.count
+        let delta = goesForward ? index - transferIndex : transferIndex - index
+        let wrapped = (delta % count + count) % count
+        return wrapped > count / 2 ? wrapped - count : wrapped
+    }
+
     /// 환승역 뒤쪽에서 이쪽으로 오고 있는 열차 중 가장 가까운 것
     private func nearest(among indexed: [(TrainPosition, Int)]) -> NextTrain? {
         guard let forwardIsUpLine else { return nil }
-        let candidates = indexed.filter { position, index in
-            guard position.isUpLine == forwardIsUpLine else { return false }
-            return goesForward ? index <= transferIndex : index >= transferIndex
-        }
-        let best = candidates.min {
-            abs($0.1 - transferIndex) < abs($1.1 - transferIndex)
-        }
+        let best = indexed
+            .filter { $0.0.isUpLine == forwardIsUpLine && offset(of: $0.1) <= 0 }
+            .max { offset(of: $0.1) < offset(of: $1.1) }
         guard let (position, index) = best else { return nil }
-        let away = abs(transferIndex - index)
+        let away = -offset(of: index)
         return NextTrain(
             trainNumber: position.trainNumber,
             stationsAway: away,

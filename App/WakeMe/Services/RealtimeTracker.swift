@@ -28,6 +28,8 @@ final class RealtimeTracker {
     /// 승차역·목적지의 노선상 순번
     private let boardingIndex: Int
     private let destinationIndex: Int
+    /// 우리 진행이 노선 순번이 **늘어나는** 쪽인지. `Trip.Direction.forward`가 그쪽이다.
+    private let goesForward: Bool
     private let lineLength: Int
     private let onUpdate: (TrainPosition) -> Void
 
@@ -52,12 +54,14 @@ final class RealtimeTracker {
     /// - Parameters:
     ///   - lineStations: 노선 전체 역 이름 (순서대로)
     ///   - origin: 승차역, - destination: 이번 구간 목적지
+    ///   - goesForward: 노선 순번이 늘어나는 쪽으로 가는지
     init?(
         key: String,
         lineID: String,
         lineStations: [String],
         origin: String,
         destination: String,
+        goesForward: Bool,
         onUpdate: @escaping (TrainPosition) -> Void
     ) {
         guard !key.isEmpty, let name = TrainPositionAPI.apiLineName(forLineID: lineID) else { return nil }
@@ -72,6 +76,7 @@ final class RealtimeTracker {
         routeIndex = index
         boardingIndex = from
         destinationIndex = to
+        self.goesForward = goesForward
         lineLength = lineStations.count
         self.onUpdate = onUpdate
     }
@@ -128,6 +133,18 @@ final class RealtimeTracker {
         return String(describing: error)
     }
 
+    /// `origin` 에서 **우리 진행 방향으로** 몇 정거장 떨어져 있는지.
+    /// 음수면 아직 `origin` 에 오지 않은 뒤쪽이다.
+    ///
+    /// 방향(`goesForward`)과 순환선의 배열 끝 넘어감을 한 번에 흡수한다.
+    /// 순번이 주는 쪽으로 가는 경로(`.backward`)가 전체의 절반이라, 순번 증가만
+    /// 전진으로 보면 그 절반에서 아무것도 못 띄운다.
+    private func offset(of index: Int, from origin: Int) -> Int {
+        let delta = goesForward ? index - origin : origin - index
+        let wrapped = (delta % lineLength + lineLength) % lineLength
+        return wrapped > lineLength / 2 ? wrapped - lineLength : wrapped
+    }
+
     private func apply(_ positions: [TrainPosition]) {
         if matchedTrain == nil { match(from: positions) }
         guard let train = matchedTrain else { return }
@@ -146,17 +163,14 @@ final class RealtimeTracker {
         }
 
         if let last = lastSeenIndex {
-            if index < last {
-                // 순환선에서 배열 끝을 지나 처음으로 돌아온 것은 역주행이 아니다
-                let wrapped = last - index > lineLength / 2
-                if !wrapped {
-                    // 뒤로 갔다 = 반대 방향 열차였다. 우리 방향은 이 값의 반대다.
-                    forwardIsUpLine = !position.isUpLine
-                    release()
-                    return
-                }
+            let moved = offset(of: index, from: last)
+            if moved < 0 {
+                // 뒤로 갔다 = 반대 방향 열차였다. 우리 방향은 이 값의 반대다.
+                forwardIsUpLine = !position.isUpLine
+                release()
+                return
             }
-            if index > last {
+            if moved > 0 {
                 forwardIsUpLine = position.isUpLine
                 isConfirmed = true
             }
@@ -174,19 +188,20 @@ final class RealtimeTracker {
     private func match(from positions: [TrainPosition]) {
         let anchor = expectedStation.flatMap { routeIndex[Self.normalize($0)] } ?? boardingIndex
         let best = positions
-            .compactMap { position -> (TrainPosition, Int)? in
+            .compactMap { position -> (train: TrainPosition, index: Int, gap: Int)? in
                 guard position.status != .departed,
                       let index = routeIndex[Self.normalize(position.stationName)],
-                      index <= anchor,
-                      index < destinationIndex,
                       forwardIsUpLine.map({ $0 == position.isUpLine }) ?? true
                 else { return nil }
-                return (position, index)
+                let gap = offset(of: index, from: anchor)
+                // 우리 위치나 그 뒤(아직 안 온 열차)만. 목적지에 닿은 열차는 우리를 두고 떠난다.
+                guard gap <= 0, offset(of: index, from: destinationIndex) < 0 else { return nil }
+                return (position, index, gap)
             }
-            .max { $0.1 < $1.1 }
+            .max { $0.gap < $1.gap }   // 우리에게 가장 가까운(0에 가까운) 것
         guard let best else { return }
-        matchedTrain = best.0.trainNumber
-        lastSeenIndex = best.1
+        matchedTrain = best.train.trainNumber
+        lastSeenIndex = best.index
         // 방향을 이미 배웠다면 후보를 거를 때 이미 썼으므로 바로 믿어도 된다
         isConfirmed = forwardIsUpLine != nil
     }

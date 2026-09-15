@@ -233,7 +233,8 @@ final class TripSession: Identifiable {
             // 아직 승차역에 오지 않은 뒤쪽 열차까지 봐야 곧 탈 열차를 잡는다
             lineStations: line.stations.map(\.name),
             origin: trip.stops[0].station.name,
-            destination: trip.destination.name
+            destination: trip.destination.name,
+            goesForward: trip.direction == .forward
         ) { [weak self] position in
             self?.handleRealtime(position)
         }
