@@ -66,5 +66,5 @@ cd Engine && swift test
 
 ```bash
 cd App && xcodegen generate
-xcrun simctl launch --terminate-running-process booted com.wakeme.app -uiState trip-alight
+xcrun simctl launch --terminate-running-process booted com.rosieoh.wakeme -uiState trip-alight
 ```
