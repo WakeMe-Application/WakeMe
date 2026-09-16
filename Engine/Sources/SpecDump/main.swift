@@ -15,6 +15,9 @@ struct Spec: Encodable {
     var alerts: [AlertCase]
     var travelTimes: [TravelCase]
     var journeys: [JourneyCase]
+    var motion: [MotionCase]
+    /// 각 정책의 **기본값**. 사례마다 값을 주입해 검사하면 기본값이 갈라지는 걸 못 잡는다.
+    var defaults: [String: Double]
 }
 
 struct TripPlanCase: Encodable {
@@ -36,6 +39,18 @@ struct TravelCase: Encodable {
     var lineID: String, fromID: String, toID: String
     var forward: Bool
     var seconds: TimeInterval
+}
+
+/// 정차 감지는 상태를 들고 흐르는 로직이라 **샘플 열과 그때 나온 이벤트**를 통째로 비교한다.
+/// 임계값은 아직 추정치이고 실제 탑승 로그로 맞춰 가는 중이라, 한쪽만 튜닝되면 안 된다.
+struct MotionCase: Encodable {
+    var name: String
+    var quietThreshold: Double, quietDuration: TimeInterval
+    var movingDuration: TimeInterval, window: TimeInterval
+    /// [시각(초), 수평가속도] — 시각은 0부터 시작하는 상대값이다
+    var samples: [[Double]]
+    var events: [[String: String]]
+    var finalState: String
 }
 
 struct JourneyCase: Encodable {
@@ -116,9 +131,73 @@ for (from, to) in [("선릉", "사당"), ("서울역", "고속터미널"), ("인
     }
 }
 
+// 정차 감지 — 10Hz 합성 신호로 경계 조건을 찍는다
+func motionCase(_ name: String, _ segments: [(seconds: Double, level: Double)]) -> MotionCase {
+    let parameters = StopDetector.Parameters()
+    var detector = StopDetector(parameters: parameters)
+    let base = Date(timeIntervalSinceReferenceDate: 0)
+    var samples: [[Double]] = []
+    var events: [[String: String]] = []
+    var t = 0.0
+    for segment in segments {
+        var elapsed = 0.0
+        while elapsed < segment.seconds {
+            let sample = MotionSample(
+                time: base.addingTimeInterval(t), horizontalAcceleration: segment.level)
+            samples.append([t, segment.level])
+            if let event = detector.consume(sample) {
+                switch event {
+                case .stopped(let at):
+                    events.append(["kind": "stopped", "at": String(at.timeIntervalSinceReferenceDate)])
+                case .departed(let at):
+                    events.append(["kind": "departed", "at": String(at.timeIntervalSinceReferenceDate)])
+                }
+            }
+            t += 0.1
+            elapsed += 0.1
+        }
+    }
+    return MotionCase(
+        name: name,
+        quietThreshold: parameters.quietThreshold, quietDuration: parameters.quietDuration,
+        movingDuration: parameters.movingDuration, window: parameters.window,
+        samples: samples, events: events, finalState: detector.state.rawValue)
+}
+
+let motion = [
+    // 달리다가 선다 — 가장 흔한 경우
+    motionCase("run then stop", [(10, 1.2), (12, 0.05)]),
+    // 잠깐만 조용 — 신호대기·역 진입 감속은 정차가 아니다
+    motionCase("brief quiet is not a stop", [(10, 1.2), (5, 0.05), (10, 1.2)]),
+    // 서 있다가 출발
+    motionCase("stop then depart", [(12, 0.05), (10, 1.2)]),
+    // 임계값 바로 아래 — 이동평균이 창을 넘기며 어떻게 도는지
+    motionCase("just under threshold", [(12, 0.24)]),
+    // 임계값 바로 위 — 조용으로 넘어가면 안 된다
+    motionCase("just over threshold", [(12, 0.26)]),
+]
+
+let stopDefaults = StopDetector.Parameters()
+let alertDefaults = AlertPolicy()
+let journeyDefaults = JourneyPlanner.Options()
+let defaults: [String: Double] = [
+    "stop.quietThreshold": stopDefaults.quietThreshold,
+    "stop.quietDuration": stopDefaults.quietDuration,
+    "stop.movingDuration": stopDefaults.movingDuration,
+    "stop.window": stopDefaults.window,
+    "alert.prepareStopsBefore": Double(alertDefaults.prepareStopsBefore),
+    "alert.alightEarlierBy": alertDefaults.alightEarlierBy,
+    "journey.transferSeconds": journeyDefaults.transferSeconds,
+    "journey.transferWaitSeconds": journeyDefaults.transferWaitSeconds,
+    "journey.maxTransfers": Double(journeyDefaults.maxTransfers),
+    // transferPenalty 는 internal 이라 여기 담지 않는다. 테스트 때문에 공개 API 를 넓히는 건
+    // 과하고, 값이 갈라지면 "환승 적게" 여정 사례가 다른 노선을 고르므로 이미 잡힌다.
+]
+
 let spec = Spec(
     networkVersion: network.version,
-    tripPlans: tripPlans, alerts: alerts, travelTimes: travelTimes, journeys: journeys)
+    tripPlans: tripPlans, alerts: alerts, travelTimes: travelTimes,
+    journeys: journeys, motion: motion, defaults: defaults)
 
 let encoder = JSONEncoder()
 encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
