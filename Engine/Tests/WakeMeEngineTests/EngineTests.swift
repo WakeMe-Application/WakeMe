@@ -10,6 +10,46 @@ private func line2() throws -> SubwayLine {
     try #require(try SubwayNetwork.bundled().line(id: "L2-본선"))
 }
 
+struct TravelTimeTests {
+    /// `runSeconds` 는 이웃한 두 역만 센다. 여러 역을 건너뛰면 구간을 하나씩 더해야 한다.
+    @Test func sumsEachSegment() throws {
+        let line = try line2()
+        let from = try #require(line.index(of: 선릉))
+        let to = try #require(line.index(of: 강남))
+        let mid = try #require(line.index(of: 역삼))
+
+        let expected = line.runSeconds(from: from, to: mid)
+            + line.defaultDwellSeconds
+            + line.runSeconds(from: mid, to: to)
+        #expect(line.travelSeconds(from: from, to: to, forward: true) == expected)
+    }
+
+    /// 한 구간짜리는 정차 시간이 붙지 않는다
+    @Test func adjacentHasNoDwell() throws {
+        let line = try line2()
+        let from = try #require(line.index(of: 선릉))
+        let to = try #require(line.index(of: 역삼))
+        #expect(line.travelSeconds(from: from, to: to, forward: true) == line.runSeconds(from: from, to: to))
+    }
+
+    @Test func sameStationIsZero() throws {
+        let line = try line2()
+        let index = try #require(line.index(of: 강남))
+        #expect(line.travelSeconds(from: index, to: index, forward: true) == 0)
+    }
+
+    /// 순환선은 반대 방향으로도 끝까지 간다 (한 바퀴를 넘어 돌지 않는다)
+    @Test func wrapsBackwardOnCircularLine() throws {
+        let line = try line2()
+        let from = try #require(line.index(of: 시청))
+        let to = try #require(line.index(of: 충정로))
+        let backward = line.travelSeconds(from: from, to: to, forward: false)
+        #expect(backward > 0)
+        // 시청 바로 앞이 충정로이므로 한 구간이다
+        #expect(backward == line.runSeconds(from: from, to: to))
+    }
+}
+
 struct NetworkTests {
     @Test func coversMetropolitanLines() throws {
         let network = try SubwayNetwork.bundled()
