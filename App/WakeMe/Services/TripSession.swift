@@ -186,6 +186,32 @@ final class TripSession: Identifiable {
         return min(max(Double(index) + offset, 0), Double(trip.stops.count - 1))
     }
 
+    /// 잡은 열차가 **내가 선 역**까지 오는 데 남은 시간. 이미 와 있으면 0.
+    ///
+    /// 타기 전에만 의미가 있다 — 타고 나면 그 열차가 곧 내 위치라서,
+    /// 그때는 이 자리에 수신 경과를 보여 준다.
+    var secondsUntilTrainArrives: TimeInterval? {
+        guard !hasDeparted, let livePosition,
+              let trainIndex = line.index(ofName: livePosition.stationName),
+              let myIndex = line.index(of: currentStop.station.id)
+        else { return nil }
+        if trainIndex == myIndex {
+            // 진입 중이면 아직 문이 안 열렸다.
+            // 출발은 0이 아니라 음수로 돌려, 떠났다는 것을 화면이 구분하게 한다.
+            switch livePosition.status {
+            case .approaching, .leftPreviousStation: return 20
+            case .arrived: return 0
+            case .departed: return -1
+            }
+        }
+        let travel = line.travelSeconds(from: trainIndex, to: myIndex, forward: trip.direction == .forward)
+        // 받은 지 1분 지난 "4분 뒤"는 지금은 3분이다. 빼 주지 않으면 숫자가 멈춰 보이기도 한다.
+        let elapsed = now.timeIntervalSince(livePosition.receivedAt)
+        // 0까지 내리지는 않는다. "도착하였습니다"는 API가 그렇게 보고했을 때만 쓴다 —
+        // 응답이 끊긴 사이 계산만으로 도착을 단정하면 헛걸음을 시킨다.
+        return max(30, travel - elapsed)
+    }
+
     /// 실시간 열차 정보. 역을 특정할 수 있어 시간 모델보다 우선하고, 급행 여부도 함께 본다.
     private func handleRealtime(_ position: TrainPosition) {
         // 위치 보정은 '도착'일 때만 하지만, 화면에는 진입·출발도 그대로 보여 준다

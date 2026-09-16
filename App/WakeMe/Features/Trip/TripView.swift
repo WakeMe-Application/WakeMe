@@ -179,10 +179,9 @@ struct TripView: View {
                         .foregroundStyle(BoardPalette.secondaryText)
                         .lineLimit(1)
                     Spacer(minLength: 0)
-                    Text(freshness(of: position.receivedAt))
-                        .font(.caption)
-                        .foregroundStyle(isStale(position.receivedAt)
-                                         ? BoardPalette.prepare : BoardPalette.secondaryText)
+                    Text(rightHandText(for: position))
+                        .font(.caption.weight(session.secondsUntilTrainArrives == nil ? .regular : .bold))
+                        .foregroundStyle(rightHandColor(for: position))
                 } else {
                     Text(session.realtimeStatus)
                         .font(.footnote)
@@ -210,12 +209,43 @@ struct TripView: View {
         guard let position = session.livePosition else {
             return "실시간 열차 " + session.realtimeStatus
         }
-        let age = Int(session.now.timeIntervalSince(position.receivedAt))
-        let ageText = age < 60 ? "\(max(age, 1))초 전 받음" : "\(age / 60)분 전 받음"
-        return "실시간 열차 위치. \(position.locationText). \(position.trainNumber)번 열차. \(ageText)"
+        let tail: String
+        if let seconds = session.secondsUntilTrainArrives {
+            tail = seconds < 0 ? "방금 출발했어요"
+                 : (seconds == 0 ? "도착하였습니다"
+                 : (seconds < 60 ? "곧 도착" : "약 \(Int((seconds / 60).rounded()))분 뒤 도착"))
+        } else {
+            let age = Int(session.now.timeIntervalSince(position.receivedAt))
+            tail = age < 60 ? "\(max(age, 1))초 전 받음" : "\(age / 60)분 전 받음"
+        }
+        return "실시간 열차 위치. \(position.locationText). \(position.trainNumber)번 열차. \(tail)"
     }
 
     /// 마지막 수신이 얼마나 지났는지. 30초마다 받으므로 1분을 넘으면 끊긴 것으로 읽힌다.
+    /// 오른쪽 끝에 무엇을 적을지.
+    ///
+    /// 타기 전에는 **내 역에 언제 오는지**가 가장 알고 싶은 값이다.
+    /// 타고 난 뒤에는 그 열차가 곧 내 위치라 도착 시간이 뜻을 잃으므로,
+    /// 그때는 이 값을 얼마나 오래 전에 받았는지를 보여 준다.
+    private func rightHandText(for position: TrainPosition) -> String {
+        guard let seconds = session.secondsUntilTrainArrives else {
+            return freshness(of: position.receivedAt)
+        }
+        // 이미 떠난 열차를 "도착하였습니다"라고 하면, 놓친 사람에게 탔다고 말하는 꼴이다
+        if seconds < 0 { return "방금 출발했어요" }
+        if seconds == 0 { return "도착하였습니다" }
+        if seconds < 60 { return "곧 도착" }
+        return "약 \(Int((seconds / 60).rounded()))분 뒤 도착"
+    }
+
+    private func rightHandColor(for position: TrainPosition) -> Color {
+        guard let seconds = session.secondsUntilTrainArrives else {
+            return isStale(position.receivedAt) ? BoardPalette.prepare : BoardPalette.secondaryText
+        }
+        if seconds < 0 { return BoardPalette.prepare }   // 떠났다 — 주의 색
+        return seconds == 0 ? BoardPalette.current : BoardPalette.text
+    }
+
     /// 이 값을 **받은 지** 얼마나 됐는지.
     ///
     /// "받은 지"를 빼면 바로 왼쪽의 "선릉 도착"과 한 줄로 붙어
