@@ -4,7 +4,7 @@
 |---|---|
 | 앱 이름 (표시) | **깨워줘** |
 | 영문·식별자 | **WakeMe** (레포·Xcode 타깃·Swift 패키지) |
-| 번들 ID | `com.wakeme.app` · 위젯 `com.wakeme.app.widgets` |
+| 번들 ID | `com.rosieoh.wakeme` · 위젯 `com.rosieoh.wakeme.widgets` |
 | 한 줄 설명 | 지하철 하차 알림 |
 | 브랜드 색 | `#2F6BFF` (앱의 `DS.primary`와 같은 값) |
 | 아이콘 그라데이션 | `#5C8CFF` → `#2F6BFF` |

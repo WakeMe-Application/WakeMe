@@ -43,6 +43,24 @@ enum NotificationScheduler {
         }
     }
 
+    /// 설정의 "알림 테스트" — 실제 하차 알림과 **같은 방식**으로 한 번 쏜다.
+    ///
+    /// 이 앱의 약속은 "잠들어도 된다"인데, 지금까지는 실제로 지하철을 타 봐야만
+    /// 내 폰에서 알림이 뚫리는지 알 수 있었다. 자기 전에 확인할 수 있어야 한다.
+    /// 그래서 `interruptionLevel`·소리·문구를 실제와 똑같이 맞춘다.
+    static func fireTest(soundEnabled: Bool) async {
+        let content = UNMutableNotificationContent()
+        content.title = "이번 역에서 내리세요"
+        content.body = "실제 하차 알림은 이렇게 울려요"
+        content.interruptionLevel = .timeSensitive
+        content.sound = soundEnabled ? .default : nil
+        let request = UNNotificationRequest(
+            identifier: "\(identifierPrefix)-test",
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false))
+        try? await UNUserNotificationCenter.current().add(request)
+    }
+
     static func cancelAll() {
         let ids = [identifier(.prepare, 0), identifier(.alightNow, 0)]
             + arrivedRepeats.indices.map { identifier(.arrived, $0) }

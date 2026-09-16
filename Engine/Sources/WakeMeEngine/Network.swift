@@ -48,6 +48,27 @@ public struct SubwayLine: Codable, Hashable, Identifiable, Sendable {
         return segmentSeconds[index]
     }
 
+    /// `from` 에서 `to` 까지 가는 데 걸리는 시간 (주행 + 중간 역 정차).
+    ///
+    /// `runSeconds` 는 **이웃한 두 역** 사이만 센다. 여러 역을 건너뛰어 부르면
+    /// 순환선 넘어감 구간으로 처리돼 엉뚱한 값이 나오므로, 한 구간씩 더해야 한다.
+    ///
+    /// - Parameter forward: 순번이 늘어나는 쪽으로 가는지. 순환선은 이 방향으로 감싼다.
+    public func travelSeconds(from: Int, to: Int, forward: Bool) -> TimeInterval {
+        let count = stations.count
+        guard count > 1, stations.indices.contains(from), stations.indices.contains(to) else { return 0 }
+        var total: TimeInterval = 0
+        var index = from
+        // 한 바퀴를 넘게 돌 일은 없다. 잘못된 방향이 들어와도 멈추게 둔다.
+        for _ in 0..<count where index != to {
+            let next = forward ? (index + 1) % count : (index - 1 + count) % count
+            total += runSeconds(from: index, to: next)
+            if next != to { total += defaultDwellSeconds }
+            index = next
+        }
+        return total
+    }
+
     /// 계통이 아니라 노선 단위 이름
     public var lineName: String { baseName ?? name }
 

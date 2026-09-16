@@ -16,7 +16,9 @@ struct TrainPosition: Hashable, Sendable {
 
     let trainNumber: String
     let stationName: String
-    let nextStationName: String
+    /// 이 열차의 **종착역** (API `statnTnm`). 다음 역이 아니다 —
+    /// 청담에 있는 열차의 값이 "장암"으로 오는 것을 확인했다.
+    let terminusName: String
     let status: Status
     /// 상행·내선이면 true (API updnLine 0)
     let isUpLine: Bool
@@ -108,7 +110,7 @@ extension TrainPosition {
         guard let trainNumber = row.trainNo, let stationName = row.statnNm else { return nil }
         self.trainNumber = trainNumber
         self.stationName = stationName
-        nextStationName = row.statnTnm ?? ""
+        terminusName = row.statnTnm ?? ""
         status = Status(rawValue: row.trainSttus ?? "") ?? .approaching
         isUpLine = row.updnLine == "0"
         isExpress = (row.directAt ?? "0") != "0"

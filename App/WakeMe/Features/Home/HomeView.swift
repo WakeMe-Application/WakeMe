@@ -16,6 +16,7 @@ struct HomeView: View {
                             title: "어디서\n내리세요?",
                             subtitle: "내릴 역만 알려주시면 전역 출발 때부터 챙길게요")
                     }
+                    if let session = model.session { ongoingBanner(session) }
                     searchButton
                     if !model.store.routines.isEmpty { routinesSection }
                     if !model.store.recents.isEmpty { recentsSection }
@@ -39,6 +40,32 @@ struct HomeView: View {
                 }
             }
         }
+    }
+
+    /// 탑승 중에 다른 앱을 갔다 오거나 실수로 나가면 홈으로 떨어진다.
+    /// 세션은 살아 있는데 돌아갈 입구가 없었다.
+    private func ongoingBanner(_ session: TripSession) -> some View {
+        Button {
+            model.presentPendingTrip()
+        } label: {
+            HStack(spacing: 12) {
+                LineBadge(shortName: session.line.shortName, colorHex: session.line.colorHex, size: 32)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("안내 중")
+                        .font(DS.caption.weight(.bold))
+                        .foregroundStyle(DS.primary)
+                    Text("\(session.finalDestination.name)까지 \(session.snapshot.stopsRemaining)정거장")
+                        .font(DS.label.weight(.semibold))
+                        .foregroundStyle(.primary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").foregroundStyle(.secondary)
+            }
+            .padding(16)
+            .background(DS.primary.opacity(0.12), in: .rect(cornerRadius: DS.cardRadius))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("탑승 화면으로 돌아갑니다")
     }
 
     private var searchButton: some View {

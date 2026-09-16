@@ -2,6 +2,7 @@ import SwiftUI
 import WakeMeEngine
 
 struct SettingsView: View {
+    @State private var testFired = false
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
@@ -35,7 +36,7 @@ struct SettingsView: View {
     // MARK: - 섹션
 
     private func alertSection(store: AppStore) -> some View {
-        CardSection(title: "하차 알림", footnote: "2차 알림은 목적지 바로 전 역을 출발할 때 울려요. 이어폰을 끼고 있으면 소리가 이어폰으로 나와요.") {
+        CardSection(title: "하차 알림", footnote: "2차 알림은 목적지 바로 전 역을 출발할 때 울려요. \"무음에서도 울리기\"를 켜면 시계 앱 알람처럼 울려서 무음·집중 모드를 뚫습니다(마지막 구간에만). 하차 피드백을 주시면 앞당김을 스스로 맞춰 갑니다.") {
             SettingRow(title: "1차 준비 알림") {
                 Picker("", selection: Binding(get: { store.settings.prepareStopsBefore }, set: { store.settings.prepareStopsBefore = $0 })) {
                     Text("끔").tag(0)
@@ -52,15 +53,56 @@ struct SettingsView: View {
                     Text("안 함").tag(TimeInterval(0))
                     Text("30초").tag(TimeInterval(30))
                     Text("1분").tag(TimeInterval(60))
+                    Text("1분 30초").tag(TimeInterval(90))
+                    Text("2분").tag(TimeInterval(120))
                 }
-                .pickerStyle(.segmented)
+                // 피드백 자동 보정이 2분까지 닿아 선택지가 다섯이다.
+                // 세그먼트로는 좁아 글자가 잘리므로 메뉴로 둔다.
+                .pickerStyle(.menu)
                 .labelsHidden()
-                .frame(width: 190)
+            }
+            if let adjustment = store.settings.lastTimingAdjustment {
+                Divider().background(DS.separator)
+                Label(
+                    """
+                    하차 피드백을 반영해 \(adjustment.delta > 0 ? "30초 앞당겼어요" : "30초 늦췄어요"). \
+                    지금은 \(TripFormat.duration(adjustment.resulting)) 앞당겨 울려요.
+                    """,
+                    systemImage: "wand.and.sparkles")
+                    .font(DS.caption)
+                    .foregroundStyle(DS.primary)
+            }
+            Divider().background(DS.separator)
+            SettingRow(title: "무음에서도 울리기") {
+                Toggle("", isOn: Binding(get: { store.settings.alarmEnabled }, set: { store.settings.alarmEnabled = $0 }))
+                    .labelsHidden()
+            }
+            Divider().background(DS.separator)
+            SettingRow(title: "이어폰 음성 안내") {
+                Toggle("", isOn: Binding(get: { store.settings.voiceEnabled }, set: { store.settings.voiceEnabled = $0 }))
+                    .labelsHidden()
             }
             Divider().background(DS.separator)
             SettingRow(title: "알림 소리") {
                 Toggle("", isOn: Binding(get: { store.settings.soundEnabled }, set: { store.settings.soundEnabled = $0 }))
                     .labelsHidden()
+            }
+            Divider().background(DS.separator)
+            Button {
+                Task {
+                    _ = await NotificationScheduler.requestAuthorization()
+                    await NotificationScheduler.fireTest(soundEnabled: store.settings.soundEnabled)
+                    testFired = true
+                }
+            } label: {
+                Label("지금 알림 테스트", systemImage: "bell.badge.waveform.fill")
+                    .font(DS.label.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if testFired {
+                Text("2초 뒤에 울려요. 화면을 끄거나 무음으로 두고 실제로 들리는지 확인해 보세요.")
+                    .font(DS.caption)
+                    .foregroundStyle(.secondary)
             }
         }
     }
