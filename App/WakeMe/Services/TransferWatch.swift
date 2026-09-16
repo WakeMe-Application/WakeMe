@@ -110,7 +110,8 @@ final class TransferWatch {
         return NextTrain(
             trainNumber: position.trainNumber,
             stationsAway: away,
-            seconds: line.runSeconds(from: min(index, transferIndex), to: max(index, transferIndex)),
+            // runSeconds 는 이웃한 두 역만 센다. 여러 역을 건너뛰므로 구간 합산을 쓴다.
+            seconds: line.travelSeconds(from: index, to: transferIndex, forward: goesForward),
             isExpress: position.isExpress)
     }
 }
