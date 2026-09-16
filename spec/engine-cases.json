@@ -4355,6 +4355,664 @@
     }
   ],
   "networkVersion" : "2026.09.1",
+  "tracker" : [
+    {
+      "alightEarlierBy" : 0,
+      "destinationID" : "0226",
+      "lineID" : "L2-본선",
+      "originID" : "0220",
+      "prepareStopsBefore" : 2,
+      "scheduledOffsets" : [
+        {
+          "at" : "420.0",
+          "kind" : "prepare"
+        },
+        {
+          "at" : "570.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "720.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.0",
+          "secondsToArrival" : "720.0",
+          "stopsRemaining" : "6"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "2",
+          "elapsed" : "180.0",
+          "isDwelling" : "true",
+          "phase" : "riding",
+          "progress" : "0.25",
+          "secondsToArrival" : "540.0",
+          "stopsRemaining" : "4"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "4",
+          "elapsed" : "360.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.5",
+          "secondsToArrival" : "360.0",
+          "stopsRemaining" : "3"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "5",
+          "elapsed" : "540.0",
+          "isDwelling" : "true",
+          "phase" : "prepare",
+          "progress" : "0.75",
+          "secondsToArrival" : "180.0",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "720.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "864.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    },
+    {
+      "alightEarlierBy" : 60,
+      "destinationID" : "0226",
+      "lineID" : "L2-본선",
+      "originID" : "0220",
+      "prepareStopsBefore" : 3,
+      "scheduledOffsets" : [
+        {
+          "at" : "330.0",
+          "kind" : "prepare"
+        },
+        {
+          "at" : "510.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "720.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.0",
+          "secondsToArrival" : "720.0",
+          "stopsRemaining" : "6"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "2",
+          "elapsed" : "180.0",
+          "isDwelling" : "true",
+          "phase" : "riding",
+          "progress" : "0.25",
+          "secondsToArrival" : "540.0",
+          "stopsRemaining" : "4"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "4",
+          "elapsed" : "360.0",
+          "isDwelling" : "false",
+          "phase" : "prepare",
+          "progress" : "0.5",
+          "secondsToArrival" : "360.0",
+          "stopsRemaining" : "3"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "5",
+          "elapsed" : "540.0",
+          "isDwelling" : "true",
+          "phase" : "alightNow",
+          "progress" : "0.75",
+          "secondsToArrival" : "180.0",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "720.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "864.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    },
+    {
+      "alightEarlierBy" : 0,
+      "destinationID" : "0220",
+      "lineID" : "L2-본선",
+      "originID" : "0226",
+      "prepareStopsBefore" : 2,
+      "scheduledOffsets" : [
+        {
+          "at" : "540.0",
+          "kind" : "prepare"
+        },
+        {
+          "at" : "630.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "720.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.0",
+          "secondsToArrival" : "720.0",
+          "stopsRemaining" : "6"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "2",
+          "elapsed" : "180.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.25",
+          "secondsToArrival" : "540.0",
+          "stopsRemaining" : "5"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "3",
+          "elapsed" : "360.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.5",
+          "secondsToArrival" : "360.0",
+          "stopsRemaining" : "4"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "5",
+          "elapsed" : "540.0",
+          "isDwelling" : "false",
+          "phase" : "prepare",
+          "progress" : "0.75",
+          "secondsToArrival" : "180.0",
+          "stopsRemaining" : "2"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "720.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "864.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    },
+    {
+      "alightEarlierBy" : 60,
+      "destinationID" : "0220",
+      "lineID" : "L2-본선",
+      "originID" : "0226",
+      "prepareStopsBefore" : 3,
+      "scheduledOffsets" : [
+        {
+          "at" : "420.0",
+          "kind" : "prepare"
+        },
+        {
+          "at" : "570.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "720.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.0",
+          "secondsToArrival" : "720.0",
+          "stopsRemaining" : "6"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "2",
+          "elapsed" : "180.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.25",
+          "secondsToArrival" : "540.0",
+          "stopsRemaining" : "5"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "3",
+          "elapsed" : "360.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.5",
+          "secondsToArrival" : "360.0",
+          "stopsRemaining" : "4"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "5",
+          "elapsed" : "540.0",
+          "isDwelling" : "false",
+          "phase" : "prepare",
+          "progress" : "0.75",
+          "secondsToArrival" : "180.0",
+          "stopsRemaining" : "2"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "720.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "6",
+          "elapsed" : "864.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    },
+    {
+      "alightEarlierBy" : 0,
+      "destinationID" : "0243",
+      "lineID" : "L2-본선",
+      "originID" : "0201",
+      "prepareStopsBefore" : 2,
+      "scheduledOffsets" : [
+        {
+          "at" : "0.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "90.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.0",
+          "secondsToArrival" : "90.0",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "22.5",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.25",
+          "secondsToArrival" : "67.5",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "45.0",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.5",
+          "secondsToArrival" : "45.0",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "67.5",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.75",
+          "secondsToArrival" : "22.5",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "90.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "108.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    },
+    {
+      "alightEarlierBy" : 60,
+      "destinationID" : "0243",
+      "lineID" : "L2-본선",
+      "originID" : "0201",
+      "prepareStopsBefore" : 3,
+      "scheduledOffsets" : [
+        {
+          "at" : "0.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "90.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.0",
+          "secondsToArrival" : "90.0",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "22.5",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.25",
+          "secondsToArrival" : "67.5",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "45.0",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.5",
+          "secondsToArrival" : "45.0",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "67.5",
+          "isDwelling" : "false",
+          "phase" : "alightNow",
+          "progress" : "0.75",
+          "secondsToArrival" : "22.5",
+          "stopsRemaining" : "1"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "90.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "108.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    },
+    {
+      "alightEarlierBy" : 0,
+      "destinationID" : "0409",
+      "lineID" : "L4-본선",
+      "originID" : "0426",
+      "prepareStopsBefore" : 2,
+      "scheduledOffsets" : [
+        {
+          "at" : "1890.0",
+          "kind" : "prepare"
+        },
+        {
+          "at" : "2010.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "2100.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.0",
+          "secondsToArrival" : "2100.0",
+          "stopsRemaining" : "17"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "5",
+          "elapsed" : "525.0",
+          "isDwelling" : "true",
+          "phase" : "riding",
+          "progress" : "0.25",
+          "secondsToArrival" : "1575.0",
+          "stopsRemaining" : "12"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "9",
+          "elapsed" : "1050.0",
+          "isDwelling" : "true",
+          "phase" : "riding",
+          "progress" : "0.5",
+          "secondsToArrival" : "1050.0",
+          "stopsRemaining" : "8"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "13",
+          "elapsed" : "1575.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.75",
+          "secondsToArrival" : "525.0",
+          "stopsRemaining" : "5"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "17",
+          "elapsed" : "2100.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "17",
+          "elapsed" : "2520.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    },
+    {
+      "alightEarlierBy" : 60,
+      "destinationID" : "0409",
+      "lineID" : "L4-본선",
+      "originID" : "0426",
+      "prepareStopsBefore" : 3,
+      "scheduledOffsets" : [
+        {
+          "at" : "1740.0",
+          "kind" : "prepare"
+        },
+        {
+          "at" : "1950.0",
+          "kind" : "alightNow"
+        },
+        {
+          "at" : "2100.0",
+          "kind" : "arrived"
+        }
+      ],
+      "snapshots" : [
+        {
+          "confidence" : "anchored",
+          "currentIndex" : "1",
+          "elapsed" : "0.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.0",
+          "secondsToArrival" : "2100.0",
+          "stopsRemaining" : "17"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "5",
+          "elapsed" : "525.0",
+          "isDwelling" : "true",
+          "phase" : "riding",
+          "progress" : "0.25",
+          "secondsToArrival" : "1575.0",
+          "stopsRemaining" : "12"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "9",
+          "elapsed" : "1050.0",
+          "isDwelling" : "true",
+          "phase" : "riding",
+          "progress" : "0.5",
+          "secondsToArrival" : "1050.0",
+          "stopsRemaining" : "8"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "13",
+          "elapsed" : "1575.0",
+          "isDwelling" : "false",
+          "phase" : "riding",
+          "progress" : "0.75",
+          "secondsToArrival" : "525.0",
+          "stopsRemaining" : "5"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "17",
+          "elapsed" : "2100.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        },
+        {
+          "confidence" : "estimated",
+          "currentIndex" : "17",
+          "elapsed" : "2520.0",
+          "isDwelling" : "true",
+          "phase" : "arrived",
+          "progress" : "1.0",
+          "secondsToArrival" : "0.0",
+          "stopsRemaining" : "0"
+        }
+      ]
+    }
+  ],
   "travelTimes" : [
     {
       "forward" : true,

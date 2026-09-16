@@ -16,8 +16,19 @@ struct Spec: Encodable {
     var travelTimes: [TravelCase]
     var journeys: [JourneyCase]
     var motion: [MotionCase]
+    var tracker: [TrackerCase]
     /// 각 정책의 **기본값**. 사례마다 값을 주입해 검사하면 기본값이 갈라지는 걸 못 잡는다.
     var defaults: [String: Double]
+}
+
+/// 시간 모델 추적기. 출발 후 여러 시점의 스냅샷과 알림 예약 시각을 통째로 비교한다.
+struct TrackerCase: Encodable {
+    var lineID: String, originID: String, destinationID: String
+    var prepareStopsBefore: Int, alightEarlierBy: TimeInterval
+    /// 출발 후 경과(초)마다의 스냅샷
+    var snapshots: [[String: String]]
+    /// 출발 시각을 0으로 둔 알림 예약 시각
+    var scheduledOffsets: [[String: String]]
 }
 
 struct TripPlanCase: Encodable {
@@ -177,6 +188,44 @@ let motion = [
     motionCase("just over threshold", [(12, 0.26)]),
 ]
 
+// 시간 모델 추적기 — 출발 직후부터 도착까지 훑는다
+var trackerCases: [TrackerCase] = []
+for (lineID, from, to) in tripInputs.prefix(4) {
+    guard let line = network.line(id: lineID),
+          let trip = try? TripPlanner.plan(on: line, from: from, to: to) else { continue }
+    for (prepare, earlier) in [(2, 0.0), (3, 60.0)] {
+        let policy = AlertPolicy(prepareStopsBefore: prepare, alightEarlierBy: earlier)
+        var tracker = TripTracker(trip: trip, policy: policy)
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        tracker.depart(at: start)
+
+        var snapshots: [[String: String]] = []
+        // 0%·25%·50%·75%·100%·초과 시점을 찍는다
+        for fraction in [0.0, 0.25, 0.5, 0.75, 1.0, 1.2] {
+            let elapsed = trip.duration * fraction
+            let snap = tracker.snapshot(at: start.addingTimeInterval(elapsed))
+            snapshots.append([
+                "elapsed": String(elapsed),
+                "phase": snap.phase.rawValue,
+                "currentIndex": String(snap.currentIndex),
+                "isDwelling": String(snap.isDwelling),
+                "stopsRemaining": String(snap.stopsRemaining),
+                "secondsToArrival": String(snap.secondsToArrival),
+                "progress": String(snap.progress),
+                "confidence": snap.confidence.rawValue,
+            ])
+        }
+        trackerCases.append(TrackerCase(
+            lineID: lineID, originID: from, destinationID: to,
+            prepareStopsBefore: prepare, alightEarlierBy: earlier,
+            snapshots: snapshots,
+            scheduledOffsets: tracker.scheduledAlerts.map {
+                ["kind": $0.alert.kind.rawValue,
+                 "at": String($0.date.timeIntervalSinceReferenceDate)]
+            }))
+    }
+}
+
 let stopDefaults = StopDetector.Parameters()
 let alertDefaults = AlertPolicy()
 let journeyDefaults = JourneyPlanner.Options()
@@ -197,7 +246,7 @@ let defaults: [String: Double] = [
 let spec = Spec(
     networkVersion: network.version,
     tripPlans: tripPlans, alerts: alerts, travelTimes: travelTimes,
-    journeys: journeys, motion: motion, defaults: defaults)
+    journeys: journeys, motion: motion, tracker: trackerCases, defaults: defaults)
 
 let encoder = JSONEncoder()
 encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
